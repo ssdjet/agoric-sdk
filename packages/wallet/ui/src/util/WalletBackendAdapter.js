@@ -22,9 +22,7 @@ export const makeBackendFromWalletBridge = walletBridge => {
     }),
   );
 
-  /**
-   * @param {AsyncIterator<any[], any[], undefined>} offersMembers
-   */
+  /** @param {AsyncIterator<any[], any[]>} offersMembers */
   const wrapOffersIterator = offersMembers =>
     harden({
       next: async () => {

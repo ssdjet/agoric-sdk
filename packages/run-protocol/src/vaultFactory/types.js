@@ -79,11 +79,11 @@
  * @property {() => Ratio} getLiquidationMargin
  * @property {() => Ratio} getLoanFee
  * @property {() => Promise<PriceQuote>} getCollateralQuote
- * @property {() => Ratio} getInterestRate - The annual interest rate on a loan
- * @property {() => RelativeTime} getChargingPeriod - The period (in seconds) at
+ * @property {() => Ratio} getInterestRate The annual interest rate on a loan
+ * @property {() => RelativeTime} getChargingPeriod The period (in seconds) at
  *   which interest is charged to the loan.
- * @property {() => RelativeTime} getRecordingPeriod - The period (in seconds)
- *   at which interest is recorded to the loan.
+ * @property {() => RelativeTime} getRecordingPeriod The period (in seconds) at
+ *   which interest is recorded to the loan.
  */
 
 /**

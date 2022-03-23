@@ -38,13 +38,13 @@ const trace = makeTracer('IV');
 /**
  * Constants for vault phase.
  *
- * ACTIVE       - vault is in use and can be changed
- * LIQUIDATING  - vault is being liquidated by the vault manager, and cannot be changed by the user
- * TRANSFER     - vault is able to be transferred (payments and debits frozen until it has a new owner)
- * CLOSED       - vault was closed by the user and all assets have been paid out
- * LIQUIDATED   - vault was closed by the manager, with remaining assets paid to owner
+ *     ACTIVE       - vault is in use and can be changed
+ *     LIQUIDATING  - vault is being liquidated by the vault manager, and cannot be changed by the user
+ *     TRANSFER     - vault is able to be transferred (payments and debits frozen until it has a new owner)
+ *     CLOSED       - vault was closed by the user and all assets have been paid out
+ *     LIQUIDATED   - vault was closed by the manager, with remaining assets paid to owner
  */
-export const VaultPhase = /** @type {const} */ ({
+ export const VaultPhase = /** @type {const} */ ({
   ACTIVE: 'active',
   LIQUIDATING: 'liquidating',
   CLOSED: 'closed',

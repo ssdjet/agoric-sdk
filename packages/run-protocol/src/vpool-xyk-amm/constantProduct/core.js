@@ -58,8 +58,10 @@ const ceilMultiplyKeepBrand = (amount, ratio) => {
  * swapOutImproved calls this function with the calculated amountIn to find out
  * if more than the wantedAmountOut can be gained for the necessary amountIn.
  *
+ * ```
  * deltaY = (deltaXOverX/(1 + deltaXOverX))*y
  * Equivalently: (deltaX / (deltaX + x)) * y
+ * ```
  *
  * @param {Amount} x - the amount of Brand X in pool
  * @param {Amount} y - the amount of Brand Y the pool
@@ -80,8 +82,8 @@ export const calcDeltaYSellingX = (x, y, deltaX) => {
  * pool for that asset. swapInReduced calls this with the calculated amountOut
  * to find out if less than the offeredAmountIn would be sufficient.
  *
- * deltaX = (deltaYOverY/(1 - deltaYOverY))*x
- * Equivalently: (deltaY / (Y - deltaY )) * x
+ *     deltaX = (deltaYOverY / (1 - deltaYOverY)) * x;
+ *     Equivalently: (deltaY / (Y - deltaY)) * x;
  *
  * @param {Amount} x - the amount of Brand X in the pool
  * @param {Amount} y - the amount of Brand Y in the pool

@@ -70,7 +70,6 @@ const calcFee = ({ amountIn, amountOut }, feeRatio) => {
 /**
  * Estimate the swap values, then calculate fees. The swapFn provided by the
  * caller will be swapInNoFees or swapOutNoFees.
- * SwapOut.
  *
  * @type {CalculateFees}
  */

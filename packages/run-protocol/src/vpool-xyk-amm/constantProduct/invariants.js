@@ -6,7 +6,7 @@ import { AmountMath } from '@agoric/ertp';
 import { natSafeMath } from '@agoric/zoe/src/contractSupport/index.js';
 
 /**
- * xy <= (x + deltaX)(y - deltaY)
+ * `xy <= (x + deltaX)(y - deltaY)`
  *
  * @param {Amount} x - the amount of Brand X in pool, xPoolAllocation
  * @param {Amount} y - the amount of Brand Y in pool, yPoolAllocation
@@ -22,7 +22,7 @@ export const checkKInvariantSellingX = (x, y, deltaX, deltaY) => {
 };
 
 /**
- * xy <= (x + deltaX)(y - deltaY)
+ * `xy <= (x + deltaX)(y - deltaY)`
  *
  * @param {Amount} x - the amount of Brand X in pool, xPoolAllocation
  * @param {Amount} y - the amount of Brand Y in pool, yPoolAllocation
