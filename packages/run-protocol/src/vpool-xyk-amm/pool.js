@@ -249,12 +249,12 @@ export const makeAddPool = (
   };
 
   /**
-   * Allows users to add new liquidity pools. `secondaryIssuer` and
-   * its keyword must not have been already used
+   * Allows users to add new liquidity pools. `secondaryIssuer` and its keyword
+   * must not have been already used
    *
    * @param {Issuer} secondaryIssuer
-   * @param {Keyword} keyword - will be used in the
-   * terms.issuers for the contract, but not used otherwise
+   * @param {Keyword} keyword - will be used in the terms.issuers for the
+   *   contract, but not used otherwise
    */
   const addPool = async (secondaryIssuer, keyword) => {
     const liquidityKeyword = `${keyword}Liquidity`;

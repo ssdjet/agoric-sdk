@@ -6,7 +6,7 @@ import { KW } from './runStakeKit.js';
 
 export { KW };
 
-const PKey = /** @type { const } */ ({
+const PKey = /** @type {const} */ ({
   MintingRatio: 'MintingRatio',
   InterestRate: 'InterestRate',
   LoanFee: 'LoanFee',

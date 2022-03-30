@@ -40,13 +40,22 @@ import { makeVaultParamManager, makeElectorateParamManager } from './params.js';
 const { details: X } = assert;
 
 /**
- * @param {ZCF<GovernanceTerms<{}> & {
- *   ammPublicFacet: unknown,
- *   liquidationInstall: unknown,
- *   loanTimingParams: {ChargingPeriod: ParamRecord<'nat'>, RecordingPeriod: ParamRecord<'nat'>},
- *   timerService: TimerService,
- *   priceAuthority: ERef<PriceAuthority>}>} zcf
- * @param {{feeMintAccess: FeeMintAccess, initialPoserInvitation: Invitation}} privateArgs
+ * @param {ZCF<
+ *   GovernanceTerms<{}> & {
+ *     ammPublicFacet: unknown;
+ *     liquidationInstall: unknown;
+ *     loanTimingParams: {
+ *       ChargingPeriod: ParamRecord<'nat'>;
+ *       RecordingPeriod: ParamRecord<'nat'>;
+ *     };
+ *     timerService: TimerService;
+ *     priceAuthority: ERef<PriceAuthority>;
+ *   }
+ * >} zcf
+ * @param {{
+ *   feeMintAccess: FeeMintAccess;
+ *   initialPoserInvitation: Invitation;
+ * }} privateArgs
  */
 export const start = async (zcf, privateArgs) => {
   const {
@@ -82,8 +91,8 @@ export const start = async (zcf, privateArgs) => {
   const { zcfSeat: rewardPoolSeat } = zcf.makeEmptySeatKit();
 
   /**
-   * We provide an easy way for the vaultManager to add rewards to
-   * the rewardPoolSeat, without directly exposing the rewardPoolSeat to them.
+   * We provide an easy way for the vaultManager to add rewards to the
+   * rewardPoolSeat, without directly exposing the rewardPoolSeat to them.
    *
    * @type {MintAndReallocate}
    */
@@ -119,12 +128,12 @@ export const start = async (zcf, privateArgs) => {
     debtMint.burnLosses(harden({ RUN: toBurn }), seat);
   };
 
-  /** @type {Store<Brand,VaultManager>} */
+  /** @type {Store<Brand, VaultManager>} */
   const collateralTypes = makeScalarMap('brand');
 
   const zoe = zcf.getZoeService();
 
-  /** @type { Store<Brand, import('./params.js').VaultParamManager> } */
+  /** @type {Store<Brand, import('./params.js').VaultParamManager>} */
   const vaultParamManagers = makeScalarMap('brand');
 
   /** @type {AddVaultType} */
@@ -186,7 +195,8 @@ export const start = async (zcf, privateArgs) => {
     return mgr.makeVaultKit(seat);
   };
 
-  /** Make a loan in the vaultManager based on the collateral type.
+  /**
+   * Make a loan in the vaultManager based on the collateral type.
    *
    * @deprecated
    */
@@ -254,7 +264,7 @@ export const start = async (zcf, privateArgs) => {
 
   const getParamMgrRetriever = () =>
     Far('paramManagerRetriever', {
-      /** @param {{key?: 'governedParams', collateralBrand?: Brand}} paramDesc */
+      /** @param {{ key?: 'governedParams'; collateralBrand?: Brand }} paramDesc */
       get: paramDesc => {
         if (paramDesc.key === 'governedParams') {
           return electorateParamManager;

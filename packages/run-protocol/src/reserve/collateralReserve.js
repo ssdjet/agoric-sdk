@@ -20,12 +20,15 @@ const makeLiquidityKeyword = keyword => `${keyword}Liquidity`;
  * accompany it, and deposits both into an AMM pool, using the AMM's method that
  * allows the pool balance to be determined based on the contributed funds.
  *
- * @param {ZCF<GovernanceTerms<{AmmInstance: ParamRecord<'instance'>}> &
- * {
- *   governedApis: ['addLiquidityToAmmPool'],
- * }
+ * @param {ZCF<
+ *   GovernanceTerms<{ AmmInstance: ParamRecord<'instance'> }> & {
+ *     governedApis: ['addLiquidityToAmmPool'];
+ *   }
  * >} zcf
- * @param {{feeMintAccess: FeeMintAccess, initialPoserInvitation: Payment}} privateArgs
+ * @param {{
+ *   feeMintAccess: FeeMintAccess;
+ *   initialPoserInvitation: Payment;
+ * }} privateArgs
  */
 const start = async (zcf, privateArgs) => {
   /** @type {MapStore<Brand, Keyword>} */

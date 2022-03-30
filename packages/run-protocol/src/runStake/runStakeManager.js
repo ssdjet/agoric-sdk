@@ -16,11 +16,15 @@ const trace = makeTracer('RM'); // TODO: how to turn this off?
 /**
  * @param {ZCF} zcf
  * @param {ZCFMint<'nat'>} debtMint
- * @param {{ debt: Brand<'nat'>, Attestation: Brand<'copyBag'>, Stake: Brand<'nat'> }} brands
  * @param {{
- *  getInterestRate: () => Ratio,
- *  getMintingRatio: () => Ratio,
- *  getLoanFee: () => Ratio,
+ *   debt: Brand<'nat'>;
+ *   Attestation: Brand<'copyBag'>;
+ *   Stake: Brand<'nat'>;
+ * }} brands
+ * @param {{
+ *   getInterestRate: () => Ratio;
+ *   getMintingRatio: () => Ratio;
+ *   getLoanFee: () => Ratio;
  * }} paramManager
  * @param {MintAndReallocate} mintAndReallocateWithFee
  * @param {BurnDebt} burnDebt
@@ -41,7 +45,7 @@ export const makeRunStakeManager = (
   burnDebt,
   { timerService, chargingPeriod, recordingPeriod, startTimeStamp },
 ) => {
-  /** @param { Amount<'copyBag'>} attestationGiven */
+  /** @param {Amount<'copyBag'>} attestationGiven */
   const maxDebtForLien = attestationGiven => {
     const mintingRatio = paramManager.getMintingRatio();
     assert.equal(
@@ -79,7 +83,6 @@ export const makeRunStakeManager = (
   );
 
   /**
-   *
    * @param {bigint} updateTime
    * @param {ZCFSeat} poolIncrementSeat
    */

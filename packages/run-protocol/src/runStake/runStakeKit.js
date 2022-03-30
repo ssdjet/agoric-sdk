@@ -14,7 +14,7 @@ const { details: X, quote: q } = assert;
 
 const trace = makeTracer('R1');
 
-export const KW = /** @type { const } */ ({
+export const KW = /** @type {const} */ ({
   [AttKW.Attestation]: AttKW.Attestation,
   Debt: 'Debt',
 });
@@ -24,9 +24,10 @@ export const KW = /** @type { const } */ ({
  *
  * @param {ZCF} zcf
  * @param {ZCFSeat} startSeat
- * @param {import('./runStakeManager.js').RunStakeManager} manager
- * return value follows the wallet invitationMakers pattern
- * @throws {Error} if startSeat proposal is not consistent with governance parameters in manager
+ * @param {import('./runStakeManager.js').RunStakeManager} manager return value
+ *   follows the wallet invitationMakers pattern
+ * @throws {Error} if startSeat proposal is not consistent with governance
+ *   parameters in manager
  */
 export const makeRunStakeKit = (zcf, startSeat, manager) => {
   // CONSTANTS
@@ -94,7 +95,10 @@ export const makeRunStakeKit = (zcf, startSeat, manager) => {
   const state = {
     open: true,
     vaultSeat,
-    /** @type {NotifierRecord<VaultUIState> | { updater: undefined, notifier: * }} */
+    /**
+     * @type {| NotifierRecord<VaultUIState>
+     *   | { updater: undefined; notifier: any }}
+     */
     ui: makeNotifierKit(),
     // Two values from the same moment
     interestSnapshot: manager.getCompoundedInterest(),
@@ -155,8 +159,8 @@ export const makeRunStakeKit = (zcf, startSeat, manager) => {
    * calculate what the current debt is given what's recorded in this vault and
    * what interest has compounded since this vault record was written.
    *
-   * @see getNormalizedDebt
    * @returns {Amount<'nat'>}
+   * @see getNormalizedDebt
    */
   const getCurrentDebt = () => {
     return calculateCurrentDebt(
@@ -167,8 +171,8 @@ export const makeRunStakeKit = (zcf, startSeat, manager) => {
   };
 
   /**
-   * Called whenever the debt is paid or created through a transaction,
-   * but not for interest accrual.
+   * Called whenever the debt is paid or created through a transaction, but not
+   * for interest accrual.
    *
    * @param {Amount} newDebt - principal and all accrued interest
    */
@@ -179,8 +183,8 @@ export const makeRunStakeKit = (zcf, startSeat, manager) => {
   };
 
   /**
-   * Update the debt balance and propagate upwards to
-   * maintain aggregate debt and liquidation order.
+   * Update the debt balance and propagate upwards to maintain aggregate debt
+   * and liquidation order.
    *
    * @param {Amount} oldDebt - prior principal and all accrued interest
    * @param {Amount} newDebt - actual principal and all accrued interest

@@ -32,11 +32,12 @@ const trace = makeTracer('VM');
 
 /**
  * @typedef {{
- *  compoundedInterest: Ratio,
- *  interestRate: Ratio,
- *  latestInterestUpdate: bigint,
- *  totalDebt: Amount<'nat'>,
- * }} AssetState */
+ *   compoundedInterest: Ratio;
+ *   interestRate: Ratio;
+ *   latestInterestUpdate: bigint;
+ *   totalDebt: Amount<'nat'>;
+ * }} AssetState
+ */
 
 /**
  * Each VaultManager manages a single collateral type.
@@ -49,16 +50,16 @@ const trace = makeTracer('VM');
  * @param {Brand} collateralBrand
  * @param {ERef<PriceAuthority>} priceAuthority
  * @param {{
- *  ChargingPeriod: ParamRecord<'nat'>
- *  RecordingPeriod: ParamRecord<'nat'>
+ *   ChargingPeriod: ParamRecord<'nat'>;
+ *   RecordingPeriod: ParamRecord<'nat'>;
  * }} timingParams
  * @param {{
- *  getInterestRate: () => Ratio,
- *  getLiquidationMargin: () => Ratio,
- *  getLoanFee: () => Ratio,
+ *   getInterestRate: () => Ratio;
+ *   getLiquidationMargin: () => Ratio;
+ *   getLoanFee: () => Ratio;
  * }} loanParamGetters
  * @param {MintAndReallocate} mintAndReallocateWithFee
- * @param {BurnDebt}  burnDebt
+ * @param {BurnDebt} burnDebt
  * @param {ERef<TimerService>} timerService
  * @param {LiquidationStrategy} liquidationStrategy
  * @param {Timestamp} startTimeStamp
@@ -76,7 +77,7 @@ export const makeVaultManager = (
   liquidationStrategy,
   startTimeStamp,
 ) => {
-  /** @type {{brand: Brand<'nat'>}} */
+  /** @type {{ brand: Brand<'nat'> }} */
   const { brand: debtBrand } = debtMint.getIssuerRecord();
 
   /** @type {GetVaultParams} */
@@ -100,10 +101,10 @@ export const makeVaultManager = (
   /**
    * A store for vaultKits prioritized by their collaterization ratio.
    *
-   * It should be set only once but it's a `let` because it can't be set until after the
-   * definition of reschedulePriceCheck, which refers to sortedVaultKits
+   * It should be set only once but it's a `let` because it can't be set until
+   * after the definition of reschedulePriceCheck, which refers to sortedVaultKits
    *
-   * @type {ReturnType<typeof makePrioritizedVaults>=}
+   * @type {ReturnType<typeof makePrioritizedVaults> | undefined}
    */
   // XXX misleading mutability and confusing flow control; could be refactored with a listener
   let prioritizedVaults;
@@ -112,11 +113,11 @@ export const makeVaultManager = (
   /** @type {MapStore<string, InnerVault>} */
   const vaultsToLiquidate = makeScalarBigMapStore('vaultsToLiquidate');
 
-  /** @type {MutableQuote=} */
+  /** @type {MutableQuote | undefined} */
   let outstandingQuote;
   /** @type {Amount<'nat'>} */
   let totalDebt = AmountMath.makeEmpty(debtBrand, 'nat');
-  /** @type {Ratio}} */
+  /** @type {Ratio} } */
   let compoundedInterest = makeRatio(100n, debtBrand); // starts at 1.0, no interest
 
   /**
@@ -135,9 +136,7 @@ export const makeVaultManager = (
     }),
   );
 
-  /**
-   * @param {Iterable<[key: string, vaultKit: InnerVault]>} vaultEntries
-   */
+  /** @param {Iterable<[key: string, vaultKit: InnerVault]>} vaultEntries */
   const enqueueToLiquidate = vaultEntries => {
     assert(prioritizedVaults);
     for (const [k, v] of vaultEntries) {
@@ -249,7 +248,6 @@ export const makeVaultManager = (
   };
 
   /**
-   *
    * @param {bigint} updateTime
    * @param {ZCFSeat} poolIncrementSeat
    */

@@ -7,7 +7,7 @@ import { assertProposalShape } from '@agoric/zoe/src/contractSupport/index.js';
 
 const { details: X } = assert;
 
-export const KW = /** @type { const } */ ({
+export const KW = /** @type {const} */ ({
   /** seat keyword for use in offers to return an attestation. */
   Attestation: 'Attestation',
 });
@@ -27,12 +27,11 @@ const getOrElse = (store, key, make) => {
 };
 
 /**
- * To support `makeAttestation`, we directly mint attestation payments.
- * We still use a ZCFMint because returning attestations is done
- * through Zoe offers.
+ * To support `makeAttestation`, we directly mint attestation payments. We still
+ * use a ZCFMint because returning attestations is done through Zoe offers.
  *
- * @param {ZCF} zcf
  * @template {AssetKind} K
+ * @param {ZCF} zcf
  * @param {ZCFMint<K>} zcfMint
  * @param {Amount<K>} amountToMint
  * @returns {Promise<Payment<K>>}
@@ -45,13 +44,12 @@ const mintZCFMintPayment = (zcf, zcfMint, amountToMint) => {
 };
 
 /**
- * Make a ZCFMint attentuated so that minting represents
- * putting a lien on staked assets. Payments can be returned,
- * releasing (part of) the lien.
+ * Make a ZCFMint attentuated so that minting represents putting a lien on
+ * staked assets. Payments can be returned, releasing (part of) the lien.
  *
- * NOTE: Using Issuer.combine or AmountMath.add could result in
- * Payments / Amounts with multiple addresses.
- * Callers are responsible to split any such payment before returning.
+ * NOTE: Using Issuer.combine or AmountMath.add could result in Payments /
+ * Amounts with multiple addresses. Callers are responsible to split any such
+ * payment before returning.
  *
  * @param {ZCF} zcf
  * @param {Brand<'nat'>} stakeBrand brand of the staked assets
@@ -60,9 +58,9 @@ const mintZCFMintPayment = (zcf, zcfMint, amountToMint) => {
 const makeAttestationIssuerKit = async (zcf, stakeBrand, lienBridge) => {
   const { add, subtract, makeEmpty, isGTE, coerce } = AmountMath;
   const empty = makeEmpty(stakeBrand);
-  /** @type { ZCFMint<'copyBag'> } */
+  /** @type {ZCFMint<'copyBag'>} */
   const attMint = await zcf.makeZCFMint(KW.Attestation, AssetKind.COPY_BAG);
-  /** @type {{ issuer: Issuer<'copyBag'>, brand: Brand<'copyBag'>}} */
+  /** @type {{ issuer: Issuer<'copyBag'>; brand: Brand<'copyBag'> }} */
   const { issuer, brand: attBrand } = attMint.getIssuerRecord();
 
   /**
@@ -132,8 +130,8 @@ const makeAttestationIssuerKit = async (zcf, stakeBrand, lienBridge) => {
   };
 
   /**
-   * @param { Address } address
-   * @param { Amount<'nat'> } lienDelta
+   * @param {Address} address
+   * @param {Amount<'nat'>} lienDelta
    */
   const mintAttestation = async (address, lienDelta) => {
     // This account state check is primarily to provide useful diagnostics.
@@ -193,7 +191,7 @@ const makeAttestationIssuerKit = async (zcf, stakeBrand, lienBridge) => {
     getLiened,
     getAccountState,
     /**
-     * @param { Amount<'copyBag'> } attAmt
+     * @param {Amount<'copyBag'>} attAmt
      * @throws if `attAmt` payload length is not 1
      */
     unwrapLienedAmount: attAmt => unwrapLienedAmount(attAmt).lienedAmount,
@@ -202,24 +200,21 @@ const makeAttestationIssuerKit = async (zcf, stakeBrand, lienBridge) => {
 };
 
 /**
- * Authorize each account holder to lien some of their staked assets
- * and get an attestation that the lien is in place.
+ * Authorize each account holder to lien some of their staked assets and get an
+ * attestation that the lien is in place.
  *
  * @param {ZCF} zcf
  * @param {Brand} stakeBrand
- * @param {ERef<StakingAuthority>} lienBridge
+ * @param {ERef<StakingAuthority>} lienBridge NOTE: the liened amount is kept
+ *   both here in JS and on the other side of the lienBridge. The mint created
+ *   here is the authority on the liened amount. The liened amount on the other
+ *   side of the bridge may lag. Do not create two mints that share a bridge.
  *
- * NOTE: the liened amount is kept both here in JS and on the
- * other side of the lienBridge. The mint created here
- * is the authority on the liened amount. The liened amount
- * on the other side of the bridge may lag. Do not create two
- * mints that share a bridge.
+ *   The provideAttestationMaker method on the returned creatorFacet provides the
+ *   authorization for an address. The account holder can then use
+ *   attMaker.makeAttestation(lienDelta).
  *
- * The provideAttestationMaker method on the returned creatorFacet
- * provides the authorization for an address. The account holder
- * can then use attMaker.makeAttestation(lienDelta).
- *
- * The keyword for use in returnAttestation offers is `Attestation`.
+ *   The keyword for use in returnAttestation offers is `Attestation`.
  */
 export const makeAttestationFacets = async (zcf, stakeBrand, lienBridge) => {
   /** @type {Store<Address, AttestationMaker>} */
@@ -231,10 +226,10 @@ export const makeAttestationFacets = async (zcf, stakeBrand, lienBridge) => {
     lienBridge,
   );
 
-  /** @param { Address } address */
+  /** @param {Address} address */
   const makeAttestationTool = address =>
     Far('attestationTool', {
-      /** @param { Amount<'nat'> } lienedDelta */
+      /** @param {Amount<'nat'>} lienedDelta */
       makeAttestation: lienedDelta =>
         lienMint.mintAttestation(address, lienedDelta),
       getAccountState: () => lienMint.getAccountState(address, stakeBrand),
@@ -252,11 +247,11 @@ export const makeAttestationFacets = async (zcf, stakeBrand, lienBridge) => {
     }),
     creatorFacet: Far('creator', {
       /**
-       * IMPORTANT: The attestation maker should only be given to the owner of the
-       * address. Only the owner can authorize creation of attestations and
+       * IMPORTANT: The attestation maker should only be given to the owner of
+       * the address. Only the owner can authorize creation of attestations and
        * the resulting liens on their underlying tokens.
        *
-       * @param { Address } address
+       * @param {Address} address
        */
       provideAttestationTool: address => {
         assert.typeof(address, 'string');

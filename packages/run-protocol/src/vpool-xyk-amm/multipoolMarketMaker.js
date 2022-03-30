@@ -29,13 +29,12 @@ const { quote: q, details: X } = assert;
  * also uses a unique approach to charging fees. Each pool grows on every trade,
  * and a protocolFee is extracted.
  *
- * We expect that this contract will have tens to hundreds of issuers.  Each
+ * We expect that this contract will have tens to hundreds of issuers. Each
  * liquidity pool is between the central token and a secondary token. Secondary
- * tokens can be exchanged with each other, but only through the central
- * token. For example, if X and Y are two token types and C is the central
- * token, a swap giving X and wanting Y would first use the pool (X, C) then the
- * pool (Y, C). There are no liquidity pools directly between two secondary
- * tokens.
+ * tokens can be exchanged with each other, but only through the central token.
+ * For example, if X and Y are two token types and C is the central token, a
+ * swap giving X and wanting Y would first use the pool (X, C) then the pool (Y,
+ * C). There are no liquidity pools directly between two secondary tokens.
  *
  * There should only need to be one instance of this contract, so liquidity can
  * be shared as much as possible.
@@ -63,14 +62,13 @@ const { quote: q, details: X } = assert;
  * queries: getInputPrice, getOutputPrice, getPoolAllocation,
  * getLiquidityIssuer, and getLiquiditySupply.
  *
- * This contract has two parameters (poolFee and protocolFee) that are
- * managed by governance. The contract calls `handleParamGovernance()` at
- * startup, which allows a contractManager to call for votes that would change
- * the parameter values in a transparent way. When correctly set up, customers
- * with access to this contract's publicFacet can verify the connectivity, and
- * see which Electorate has the ability to vote on changes, and which votes are
- * ongoing or have taken place. If not correctly set up, the validation checks
- * will fail visibly.
+ * This contract has two parameters (poolFee and protocolFee) that are managed
+ * by governance. The contract calls `handleParamGovernance()` at startup, which
+ * allows a contractManager to call for votes that would change the parameter
+ * values in a transparent way. When correctly set up, customers with access to
+ * this contract's publicFacet can verify the connectivity, and see which
+ * Electorate has the ability to vote on changes, and which votes are ongoing or
+ * have taken place. If not correctly set up, the validation checks will fail visibly.
  *
  * The initial values of the parameters are provided as poolFeeBP and
  * protocolFeeBP in terms. The poolFee is charged in RUN and each collateral, so
@@ -78,8 +76,8 @@ const { quote: q, details: X } = assert;
  * initial value is specified as a bigint for consistency.
  *
  * The contract gets the initial values for those parameters from its terms, and
- * thereafter can be seen to only use the values provided by the
- * getter method returned by the paramManager.
+ * thereafter can be seen to only use the values provided by the getter method
+ * returned by the paramManager.
  *
  * `handleParamGovernance()` adds several methods to the publicFacet of the
  * contract, and bundles the privateFacet to ensure that governance
@@ -88,29 +86,27 @@ const { quote: q, details: X } = assert;
  * The creatorFacet has one method (makeCollectFeesInvitation, which returns
  * collected fees to the creator). `handleParamGovernance()` adds internal
  * methods used by the contractGovernor. The contractGovernor then has access to
- * those internal methods, and reveals the original AMM creatorFacet to its own
- * creator.
+ * those internal methods, and reveals the original AMM creatorFacet to its own creator.
  *
  * @param {ZCF<AMMTerms>} zcf
- * @param {{initialPoserInvitation: Invitation}} privateArgs
+ * @param {{ initialPoserInvitation: Invitation }} privateArgs
  */
 const start = async (zcf, privateArgs) => {
   /**
-   * This contract must have a "Central" keyword and issuer in the
-   * IssuerKeywordRecord.
+   * This contract must have a "Central" keyword and issuer in the IssuerKeywordRecord.
    *
    * @typedef {GovernanceTerms<{
-   *   PoolFee: ParamRecord<'nat'>,
-   *   ProtocolFee: ParamRecord<'nat'>,
+   *   PoolFee: ParamRecord<'nat'>;
+   *   ProtocolFee: ParamRecord<'nat'>;
    * }> & {
-   *   brands: { Central: Brand },
-   *   issuers: {},
-   *   timer: TimerService,
-   *   poolFeeBP: BasisPoints, // portion of the fees that go into the pool
-   *   protocolFeeBP: BasisPoints, // portion of the fees that are shared with validators
+   *   brands: { Central: Brand };
+   *   issuers: {};
+   *   timer: TimerService;
+   *   poolFeeBP: BasisPoints; // portion of the fees that go into the pool
+   *   protocolFeeBP: BasisPoints; // portion of the fees that are shared with validators
    * }} AMMTerms
    *
-   * @typedef { bigint } BasisPoints -- hundredths of a percent
+   * @typedef {bigint} BasisPoints -- hundredths of a percent
    */
   const {
     brands: { Central: centralBrand },
@@ -138,7 +134,7 @@ const start = async (zcf, privateArgs) => {
     )}`,
   );
 
-  /** @type {WeakStore<Brand,XYKPool>} */
+  /** @type {WeakStore<Brand, XYKPool>} */
   const secondaryBrandToPool = makeWeakStore('secondaryBrand');
   const getPool = secondaryBrandToPool.get;
   const initPool = secondaryBrandToPool.init;
@@ -253,7 +249,7 @@ const start = async (zcf, privateArgs) => {
     }),
   );
 
-  /** @type {GovernedCreatorFacet<*>} */
+  /** @type {GovernedCreatorFacet<any>} */
   const creatorFacet = makeGovernorFacet(
     Far('AMM Fee Collector facet', {
       makeCollectFeesInvitation,

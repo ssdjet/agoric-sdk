@@ -14,7 +14,7 @@ const { details: X } = assert;
 
 /**
  * @param {Brand} uBrand
- * @param {*} _t for debug logging
+ * @param {any} _t for debug logging
  * @returns {StakingAuthority}
  */
 export const makeMockLienBridge = (uBrand, _t) => {
@@ -80,7 +80,7 @@ test.before(async t => {
 
 test('refuse to attest to more than liened amount', async t => {
   const { stakeKit, creatorFacet } =
-    await /** @type { ReturnType<typeof makeContext> } */ (t.context);
+    await /** @type {ReturnType<typeof makeContext>} */ (t.context);
 
   const uBrand = stakeKit.brand;
 
@@ -101,7 +101,7 @@ test('refuse to attest to more than liened amount', async t => {
 
 test('attestations can be combined and split', async t => {
   const { zoe, stakeKit, publicFacet, creatorFacet } =
-    await /** @type { ReturnType<typeof makeContext> } */ (t.context);
+    await /** @type {ReturnType<typeof makeContext>} */ (t.context);
 
   const issuer = await E(publicFacet).getIssuer();
   const brand = await E(publicFacet).getBrand();
@@ -133,7 +133,7 @@ test('attestations can be combined and split', async t => {
     AmountMath.add(stake50, stake25),
   );
 
-  /** @param { Payment } att */
+  /** @param {Payment} att */
   const returnAttestation = async att => {
     const invitation = E(publicFacet).makeReturnAttInvitation();
     const attestationAmount = await E(issuer).getAmountOf(att);

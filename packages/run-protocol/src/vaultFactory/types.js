@@ -7,7 +7,7 @@
 /** @typedef {import('./vaultManager').CollateralManager} CollateralManager */
 
 /**
- * @typedef  {Object} AutoswapLocal
+ * @typedef {Object} AutoswapLocal
  * @property {(amount: Amount, brand: Brand) => Amount} getInputPrice
  * @property {() => Invitation} makeSwapInvitation
  */
@@ -24,10 +24,10 @@
 /**
  * @typedef {Object} Rates
  * @property {Ratio} liquidationMargin - margin below which collateral will be
- * liquidated to satisfy the debt.
+ *   liquidated to satisfy the debt.
  * @property {Ratio} interestRate - annual interest rate charged on loans
- * @property {Ratio} loanFee - The fee (in BasisPoints) charged when opening
- * or increasing a loan.
+ * @property {Ratio} loanFee - The fee (in BasisPoints) charged when opening or
+ *   increasing a loan.
  */
 
 /**
@@ -39,23 +39,21 @@
  */
 
 /**
- * @typedef  {Object} VaultFactory - the creator facet
+ * @typedef {Object} VaultFactory - the creator facet
  * @property {AddVaultType} addVaultType
- * @property {() => Promise<Array<Collateral>>} getCollaterals
+ * @property {() => Promise<Collateral[]>} getCollaterals
  * @property {() => Allocation} getRewardAllocation,
  * @property {() => Instance} getContractGovernor
  * @property {() => Promise<Invitation>} makeCollectFeesInvitation
  */
 
 /**
- * @callback MintAndReallocate
+ * @callback MintAndReallocate Mint new debt `toMint` and transfer the `fee`
+ *   portion to the vaultFactory's reward pool. Then reallocate over all the
+ *   seat arguments and the rewardPoolSeat. Update the `totalDebt` if the
+ *   reallocate succeeds.
  *
- * Mint new debt `toMint` and transfer the `fee` portion to the vaultFactory's reward
- * pool. Then reallocate over all the seat arguments and the rewardPoolSeat. Update
- * the `totalDebt` if the reallocate succeeds.
- *
- * TODO check limits.
- *
+ *   TODO check limits.
  * @param {Amount} toMint
  * @param {Amount} fee
  * @param {ZCFSeat} fromSeat
@@ -64,11 +62,8 @@
  */
 
 /**
- * @callback BurnDebt
- *
- * Burn debt tokens off a seat and update
- * the `totalDebt` if the reallocate succeeds.
- *
+ * @callback BurnDebt Burn debt tokens off a seat and update the `totalDebt` if
+ *   the reallocate succeeds.
  * @param {Amount} toBurn
  * @param {ZCFSeat} fromSeat
  * @returns {void}
@@ -86,9 +81,7 @@
  *   which interest is recorded to the loan.
  */
 
-/**
- * @typedef {string} VaultId
- */
+/** @typedef {string} VaultId */
 
 /**
  * @typedef {Object} LoanTiming
@@ -137,11 +130,11 @@
 /**
  * @typedef {Object} CalculatorKit
  * @property {Calculate} calculate calculate new debt for charging periods up to
- * the present.
+ *   the present.
  * @property {Calculate} calculateReportingPeriod calculate new debt for
- * reporting periods up to the present. If some charging periods have elapsed
- * that don't constitute whole reporting periods, the time is not updated past
- * them and interest is not accumulated for them.
+ *   reporting periods up to the present. If some charging periods have elapsed
+ *   that don't constitute whole reporting periods, the time is not updated past
+ *   them and interest is not accumulated for them.
  */
 
 /** @typedef {import('./vault').InnerVault} InnerVault */

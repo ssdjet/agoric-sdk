@@ -81,9 +81,7 @@ const setJig = _jig => {
   // testJig = jig;
 };
 
-/**
- * @param {ExecuteContract} t
- */
+/** @param {ExecuteContract} t */
 test.before(async t => {
   // makeBundle is slow, so we bundle each contract once and reuse in all tests.
   const psmBundle = await makeBundle(psmRoot);

@@ -7,13 +7,10 @@ const { details: X } = assert;
 
 /**
  * @typedef {{
- * inner: InnerVault | null,
+ *   inner: InnerVault | null;
  * }} State
  */
-/**
- *
- * @param {InnerVault} innerVault
- */
+/** @param {InnerVault} innerVault */
 const wrapVault = innerVault => {
   /** @type {NotifierRecord<VaultUIState>} */
   const { updater, notifier } = makeNotifierKit();
@@ -82,4 +79,4 @@ export const makeVaultKit = (inner, assetNotifier) => {
   return vaultKit;
 };
 
-/** @typedef {(ReturnType<typeof makeVaultKit>)} VaultKit */
+/** @typedef {ReturnType<typeof makeVaultKit>} VaultKit */

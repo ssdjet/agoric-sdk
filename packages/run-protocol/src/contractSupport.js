@@ -4,11 +4,11 @@ import { AmountMath } from '@agoric/ertp';
 const { details: X } = assert;
 
 /**
- * Apply a delta to the `base` Amount, where the delta is represented as
- * an amount to gain and an amount to lose. Typically one of those will
- * be empty because gain/loss comes from the give/want for a specific asset
- * on a proposal. We use two Amounts because an Amount cannot represent
- * a negative number (so we use a "loss" that will be subtracted).
+ * Apply a delta to the `base` Amount, where the delta is represented as an
+ * amount to gain and an amount to lose. Typically one of those will be empty
+ * because gain/loss comes from the give/want for a specific asset on a
+ * proposal. We use two Amounts because an Amount cannot represent a negative
+ * number (so we use a "loss" that will be subtracted).
  *
  * @param {Amount} base
  * @param {Amount} gain
@@ -23,7 +23,7 @@ export const addSubtract = (base, gain, loss) =>
  * @param {string[]} keys usually 'Collateral' and 'RUN'
  */
 export const assertOnlyKeys = (proposal, keys) => {
-  /** @param { AmountKeywordRecord } clause */
+  /** @param {AmountKeywordRecord} clause */
   const onlyKeys = clause =>
     Object.getOwnPropertyNames(clause).every(c => keys.includes(c));
   assert(
@@ -37,9 +37,9 @@ export const assertOnlyKeys = (proposal, keys) => {
 };
 
 /**
- * Stage a transfer between `fromSeat` and `toSeat`, specified as the delta between
- * the gain and a loss on the `fromSeat`. The gain/loss are typically from the
- * give/want respectively of a proposal. The `key` is the allocation keyword.
+ * Stage a transfer between `fromSeat` and `toSeat`, specified as the delta
+ * between the gain and a loss on the `fromSeat`. The gain/loss are typically
+ * from the give/want respectively of a proposal. The `key` is the allocation keyword.
  *
  * @param {ZCFSeat} fromSeat
  * @param {ZCFSeat} toSeat

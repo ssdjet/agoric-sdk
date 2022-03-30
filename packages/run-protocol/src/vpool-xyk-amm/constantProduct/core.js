@@ -58,10 +58,8 @@ const ceilMultiplyKeepBrand = (amount, ratio) => {
  * swapOutImproved calls this function with the calculated amountIn to find out
  * if more than the wantedAmountOut can be gained for the necessary amountIn.
  *
- * ```
- * deltaY = (deltaXOverX/(1 + deltaXOverX))*y
- * Equivalently: (deltaX / (deltaX + x)) * y
- * ```
+ *     deltaY = (deltaXOverX / (1 + deltaXOverX)) * y;
+ *     Equivalently: (deltaX / (deltaX + x)) * y;
  *
  * @param {Amount} x - the amount of Brand X in pool
  * @param {Amount} y - the amount of Brand Y the pool
@@ -100,8 +98,7 @@ export const calcDeltaXSellingX = (x, y, deltaY) => {
 
 /**
  * The input contains the amounts in the pool and a maximum amount offered.
- * Calculate the most beneficial trade that satisfies the constant product
- * invariant.
+ * Calculate the most beneficial trade that satisfies the constant product invariant.
  *
  * @param {GetXYResultDeltaX} obj
  * @returns {ImprovedNoFeeSwapResult}
@@ -123,8 +120,7 @@ const swapInReduced = ({ x, y, deltaX: offeredAmountIn }) => {
 
 /**
  * The input contains the amounts in the pool and the minimum amount requested.
- * Calculate the most beneficial trade that satisfies the constant product
- * invariant.
+ * Calculate the most beneficial trade that satisfies the constant product invariant.
  *
  * @param {GetXYResultDeltaY} obj
  * @returns {ImprovedNoFeeSwapResult}

@@ -33,12 +33,12 @@ const setupReserveBootstrap = async (
     timer,
     zoe,
   );
-  const { produce } = /** @type { EconomyBootstrapPowers } */ (ammSpaces.space);
+  const { produce } = /** @type {EconomyBootstrapPowers} */ (ammSpaces.space);
 
   produce.chainTimerService.resolve(timer);
   produce.zoe.resolve(zoe);
 
-  /** @type {Record<string, Promise<{moduleFormat: string}>>} */
+  /** @type {Record<string, Promise<{ moduleFormat: string }>>} */
   const governanceBundlePs = {
     contractGovernor: contractGovernorBundleP,
     committee: committeeBundleP,
@@ -61,27 +61,27 @@ const setupReserveBootstrap = async (
 
 /**
  * @typedef {{
- * reserveCreatorFacet: import('../../src/reserve/collateralReserve').CollateralReserveCreatorFacet,
- * reservePublicFacet: import('../../src/reserve/collateralReserve').CollateralReservePublicFacet,
- * instance: Instance,
+ *   reserveCreatorFacet: import('../../src/reserve/collateralReserve').CollateralReserveCreatorFacet;
+ *   reservePublicFacet: import('../../src/reserve/collateralReserve').CollateralReservePublicFacet;
+ *   instance: Instance;
  * }} ReserveKit
  */
 
 /**
  * NOTE: called separately by each test so contracts don't interfere
  *
- * @param {{ committeeName: string, committeeSize: number}} electorateTerms
- * @param {ManualTimer | undefined=} timer
+ * @param {{ committeeName: string; committeeSize: number }} electorateTerms
+ * @param {ManualTimer | undefined} [timer]
  * @returns {{
- *     zoe: ZoeService,
- *     feeMintAccess: FeeMintAccess,
- *     installation: Installation,
- *     committeeCreator: ElectorateCreatorFacet,
- *     electorateInstance: Instance,
- *     governor: any,
- *     reserve: ReserveKit,
- *     invitationAmount: Amount,
- *     space: any,
+ *   zoe: ZoeService;
+ *   feeMintAccess: FeeMintAccess;
+ *   installation: Installation;
+ *   committeeCreator: ElectorateCreatorFacet;
+ *   electorateInstance: Instance;
+ *   governor: any;
+ *   reserve: ReserveKit;
+ *   invitationAmount: Amount;
+ *   space: any;
  * }}
  */
 export const setupReserveServices = async (
@@ -120,7 +120,7 @@ export const setupReserveServices = async (
   };
   const governedInstance = E(governorPublicFacet).getGovernedContract();
 
-  /** @type { GovernedPublicFacet } */
+  /** @type {GovernedPublicFacet} */
   const reservePublicFacet = await E(governorCreatorFacet).getPublicFacet();
 
   /** @type {ReserveKit} */

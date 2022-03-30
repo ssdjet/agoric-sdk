@@ -48,7 +48,7 @@ const SECONDS_PER_HOUR = 60n * 60n;
 const SECONDS_PER_DAY = 24n * SECONDS_PER_HOUR;
 
 test.before(async t => {
-  /** @param { string } ref */
+  /** @param {string} ref */
   const asset = async ref =>
     new URL(await metaResolve(ref, import.meta.url)).pathname;
 
@@ -65,9 +65,9 @@ test.before(async t => {
 
 /**
  * @param {{ context: unknown }} t
- * @returns { Record<string, Bundle> }
+ * @returns {Record<string, Bundle>}
  */
-const theBundles = t => /** @type { any } */ (t.context).bundles;
+const theBundles = t => /** @type {any} */ (t.context).bundles;
 
 export const setUpZoeForTest = async () => {
   const { makeFar } = makeLoopback('zoeTest');
@@ -96,7 +96,7 @@ export const setupBootstrap = async (
 
   const space = /** @type {any} */ (makePromiseSpace());
   const { produce, consume } =
-    /** @type { import('../../src/econ-behaviors.js').RunStakeBootstrapPowers } */ (
+    /** @type {import('../../src/econ-behaviors.js').RunStakeBootstrapPowers} */ (
       space
     );
 
@@ -143,14 +143,14 @@ const mockChain = genesisData => {
     },
     /** @param {Brand<'nat'>} stakingBrand */
     makeLienBridge: stakingBrand => {
-      /** @param { bigint } v */
+      /** @param {bigint} v */
       const ubld = v => AmountMath.make(stakingBrand, v);
 
       /** @type {StakingAuthority} */
       const authority = Far('stakeReporter', {
         /**
-         * @param { string } address
-         * @param { Brand } brand
+         * @param {string} address
+         * @param {Brand} brand
          */
         getAccountState: (address, brand) => {
           assert(brand === stakingBrand, X`unexpected brand: ${brand}`);
@@ -166,7 +166,13 @@ const mockChain = genesisData => {
             currentTime: (currentTime += 3n),
           });
         },
-        /** @type {(addr: string, p: Amount<'nat'>, t: Amount<'nat'>) => Promise<void>} */
+        /**
+         * @type {(
+         *   addr: string,
+         *   p: Amount<'nat'>,
+         *   t: Amount<'nat'>,
+         * ) => Promise<void>}
+         */
         setLiened: async (address, previous, target) => {
           const { value } = AmountMath.coerce(stakingBrand, target);
           assert(AmountMath.isEqual(previous, ubld(qty(address, liened))));
@@ -259,11 +265,11 @@ const makeWalletMaker = creatorFacet => {
 /**
  * @param {bigint} value
  * @param {{
- *   centralSupplyBundle: ERef<SourceBundle>,
- *   feeMintAccess: ERef<FeeMintAccess>,
- *   zoe: ERef<ZoeService>,
+ *   centralSupplyBundle: ERef<SourceBundle>;
+ *   feeMintAccess: ERef<FeeMintAccess>;
+ *   zoe: ERef<ZoeService>;
  * }} powers
- * @returns { Promise<Payment> }
+ * @returns {Promise<Payment>}
  */
 const mintRunPayment = async (
   value,
@@ -383,15 +389,17 @@ test('extra offer keywords are rejected', async t => {
 });
 
 /**
- * @param { StartFaker['publicFacet'] } faker
- * @param { Brand } bldBrand
- * @returns { Promise<[Amount, Payment]> }
- *
- * @param { (faker: ERef<StartFaker['publicFacet']>, bldBrand: Brand)
- *            => Promise<[Amount, Payment]> } [mockAttestation]
+ * @param {StartFaker['publicFacet']} faker
+ * @param {Brand} bldBrand
+ * @param {(
+ *   faker: ERef<StartFaker['publicFacet']>,
+ *   bldBrand: Brand,
+ * ) => Promise<[Amount, Payment]>} [mockAttestation]
+ * @returns {Promise<[Amount, Payment]>}
  *
  * @typedef {ReturnType<typeof import('./attestationFaker.js').start>} StartFaker
- * @typedef { [bigint, bigint] } Rational
+ *
+ * @typedef {[bigint, bigint]} Rational
  */
 test('forged Attestation fails', async t => {
   const bundles = theBundles(t);
@@ -456,7 +464,7 @@ const makeC1 = async (
         parameterName: 'MintingRatio',
       };
 
-      /** @type { ContractGovernanceVoteResult } */
+      /** @type {ContractGovernanceVoteResult} */
       const { details, instance } = await E(
         runStakeGovernorCreatorFacet,
       ).voteOnParamChange(paramSpec, newValue, counter, deadline);
@@ -512,7 +520,7 @@ const makeWorld = async t0 => {
     brands: { [KW.Attestation]: attBrand },
   } = await E(zoe).getTerms(await runStake.instance);
 
-  /** @param { Payment } att */
+  /** @param {Payment} att */
   const returnAttestation = async att => {
     const invitation = E(runStake.publicFacet).makeReturnAttInvitation();
     const attestationAmount = await E(attIssuer).getAmountOf(att);

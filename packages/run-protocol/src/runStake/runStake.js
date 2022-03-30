@@ -12,67 +12,65 @@ const { values } = Object;
 /**
  * Provide loans on the basis of staked assets that earn rewards.
  *
- * In addition to brands and issuers for `Staked`, `RUN`, and attestation,
- * terms of the contract include a periodic `InterestRate`
- * plus a `LoanFee` proportional to the amount borrowed, as well as
- * a `MintingRatio` of funds to (mint and) loan per unit of staked asset.
- * These terms are subject to change by the `Electorate`
- * and `electionManager` terms.
+ * In addition to brands and issuers for `Staked`, `RUN`, and attestation, terms
+ * of the contract include a periodic `InterestRate` plus a `LoanFee`
+ * proportional to the amount borrowed, as well as a `MintingRatio` of funds to
+ * (mint and) loan per unit of staked asset. These terms are subject to change
+ * by the `Electorate` and `electionManager` terms.
  *
  * @typedef {{
- *   MintingRatio: ParamRecord<'ratio'>,
- *   InterestRate: ParamRecord<'ratio'>,
- *   LoanFee: ParamRecord<'ratio'>,
+ *   MintingRatio: ParamRecord<'ratio'>;
+ *   InterestRate: ParamRecord<'ratio'>;
+ *   LoanFee: ParamRecord<'ratio'>;
  * }} RunStakeParams
+ *   As in vaultFactory, `timerService` provides the periodic signal to charge
+ *   interest according to `chargingPeriod` and `recordingPeriod`.
  *
- * As in vaultFactory, `timerService` provides the periodic signal to
- * charge interest according to `chargingPeriod` and `recordingPeriod`.
- *
- * @typedef { GovernanceTerms<RunStakeParams> & {
- *   timerService: TimerService,
- *   chargingPeriod: bigint,
- *   recordingPeriod: bigint,
- *   lienAttestationName?: string,
+ * @typedef {GovernanceTerms<RunStakeParams> & {
+ *   timerService: TimerService;
+ *   chargingPeriod: bigint;
+ *   recordingPeriod: bigint;
+ *   lienAttestationName?: string;
  * }} RunStakeTerms
- *
- * The public facet provides access to invitations to get a loan
- * or to return an attestation in order to release a lien on staked assets.
+ *   The public facet provides access to invitations to get a loan or to return an
+ *   attestation in order to release a lien on staked assets.
  *
  * @typedef {{
- *   makeLoanInvitation: () => Promise<Invitation>,
- *   makeReturnAttInvitation: () => Promise<Invitation>,
+ *   makeLoanInvitation: () => Promise<Invitation>;
+ *   makeReturnAttInvitation: () => Promise<Invitation>;
  * }} RunStakePublic
+ *   To take out a loan, get an `AttestationMaker` for your address from the
+ *   creator of this contract, and use
+ *   `E(attMaker).makeAttestation(stakedAmount)` to take out a lien and get a
+ *   payment that attests to the lien. Provide the payment in the `Attestation`
+ *   keyword of an offer, using `{ want: { Debt: amountWanted }}`.
  *
- * To take out a loan, get an `AttestationMaker` for your address from
- * the creator of this contract, and use
- * `E(attMaker).makeAttestation(stakedAmount)` to take out a lien
- * and get a payment that attests to the lien. Provide the payment
- * in the `Attestation` keyword of an offer,
- * using `{ want: { Debt: amountWanted }}`.
+ *   Then, using the invitationMakers pattern, use `AdjustBalances` to pay down
+ *   the loan or otherwise adjust the `Debt` and `Attestation`.
  *
- * Then, using the invitationMakers pattern, use `AdjustBalances` to
- * pay down the loan or otherwise adjust the `Debt` and `Attestation`.
+ *   Finally, `Close` the loan, providing `{ give: Debt: debtAmount }}`
  *
- * Finally, `Close` the loan, providing `{ give: Debt: debtAmount }}`
- *
- * To start the contract, authorize minting assets by providing `feeMintAccess`
- * and provide access to the underlying staking infrastructure in `lienBridge`.
+ *   To start the contract, authorize minting assets by providing `feeMintAccess`
+ *   and provide access to the underlying staking infrastructure in `lienBridge`.
  *
  * @typedef {{
- *   feeMintAccess: FeeMintAccess,
- *   initialPoserInvitation: Invitation,
- *   lienBridge: ERef<StakingAuthority>,
+ *   feeMintAccess: FeeMintAccess;
+ *   initialPoserInvitation: Invitation;
+ *   lienBridge: ERef<StakingAuthority>;
  * }} RunStakePrivateArgs
+ *   The creator facet can make an `AttestationMaker` for each account, which
+ *   authorizes placing a lien some of the staked assets in that account.
  *
- * The creator facet can make an `AttestationMaker` for each account, which
- * authorizes placing a lien some of the staked assets in that account.
  * @typedef {{
- *   provideAttestationMaker: (addr: string) => AttestationMaker,
- *   getLiened: (address: string, brand: Brand<'nat'>) => Amount<'nat'>,
+ *   provideAttestationMaker: (addr: string) => AttestationMaker;
+ *   getLiened: (address: string, brand: Brand<'nat'>) => Amount<'nat'>;
  * }} RunStakeCreator
- *
- * @type {ContractStartFn<RunStakePublic, RunStakeCreator,
- *                        RunStakeTerms, RunStakePrivateArgs>}
+ * @type {ContractStartFn<
+ *   RunStakePublic,
+ *   RunStakeCreator,
+ *   RunStakeTerms,
+ *   RunStakePrivateArgs
+ * >}
  */
 export const start = async (
   zcf,
@@ -106,8 +104,8 @@ export const start = async (
   const { zcfSeat: rewardPoolSeat } = zcf.makeEmptySeatKit();
 
   /**
-   * Let the manager add rewards to the rewardPoolSeat
-   * without directly exposing the rewardPoolSeat to them.
+   * Let the manager add rewards to the rewardPoolSeat without directly exposing
+   * the rewardPoolSeat to them.
    *
    * @type {MintAndReallocate}
    */

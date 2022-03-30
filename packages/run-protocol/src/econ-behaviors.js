@@ -28,7 +28,7 @@ const CENTRAL_DENOM_NAME = 'urun';
 
 /**
  * @param {EconomyBootstrapPowers} powers
- * @param {{ committeeName: string, committeeSize: number }} electorateTerms
+ * @param {{ committeeName: string; committeeSize: number }} electorateTerms
  */
 export const startEconomicCommittee = async (
   {
@@ -64,7 +64,7 @@ export const startEconomicCommittee = async (
 };
 harden(startEconomicCommittee);
 
-/** @param { EconomyBootstrapPowers } powers */
+/** @param {EconomyBootstrapPowers} powers */
 export const setupAmm = async ({
   consume: {
     chainTimerService,
@@ -133,7 +133,7 @@ export const setupAmm = async ({
   return ammInstallation.then(i => ammInstallationProducer.resolve(i));
 };
 
-/** @param { EconomyBootstrapPowers } powers */
+/** @param {EconomyBootstrapPowers} powers */
 export const setupReserve = async ({
   consume: {
     feeMintAccess: feeMintAccessP,
@@ -209,9 +209,9 @@ export const setupReserve = async ({
 };
 
 /**
- * @param { EconomyBootstrapPowers } powers
- * @param { Object } config
- * @param { LoanTiming } config.loanParams
+ * @param {EconomyBootstrapPowers} powers
+ * @param {Object} config
+ * @param {LoanTiming} config.loanParams
  */
 export const startVaultFactory = async (
   {
@@ -318,11 +318,10 @@ export const startVaultFactory = async (
 };
 
 /**
- * Grant access to the VaultFactory creatorFacet
- * to up to one user based on address.
+ * Grant access to the VaultFactory creatorFacet to up to one user based on address.
  *
- * @param { BootstrapSpace & {
- *   vatParameters: { argv: { vaultFactoryControllerAddress?: string } }
+ * @param {BootstrapSpace & {
+ *   vatParameters: { argv: { vaultFactoryControllerAddress?: string } };
  * }} powers
  */
 export const grantVaultFactoryControl = async ({
@@ -348,7 +347,7 @@ export const grantVaultFactoryControl = async ({
 };
 harden(grantVaultFactoryControl);
 
-/** @param { BootstrapPowers } powers */
+/** @param {BootstrapPowers} powers */
 export const configureVaultFactoryUI = async ({
   consume: { board, zoe },
   issuer: {
@@ -437,10 +436,12 @@ harden(configureVaultFactoryUI);
  * Start the reward distributor.
  *
  * @param {BootstrapPowers & {
- *   consume: { loadVat: ERef<VatLoader<DistributeFeesVat>>},
+ *   consume: { loadVat: ERef<VatLoader<DistributeFeesVat>> };
  * }} powers
  *
- * @typedef {ERef<ReturnType<import('../../vats/src/vat-distributeFees.js').buildRootObject>>} DistributeFeesVat
+ * @typedef {ERef<
+ *   ReturnType<import('../../vats/src/vat-distributeFees.js').buildRootObject>
+ * >} DistributeFeesVat
  */
 export const startRewardDistributor = async ({
   consume: {
@@ -502,29 +503,35 @@ harden(startRewardDistributor);
  *
  * @template T
  * @typedef {{
- *   consume: { [P in keyof T]: ERef<T[P]> },
- *   produce: { [P in keyof T]: Producer<T[P]> },
+ *   consume: { [P in keyof T]: ERef<T[P]> };
+ *   produce: { [P in keyof T]: Producer<T[P]> };
  * }} PromiseMarket
  */
 
 /**
- * @typedef {EconomyBootstrapPowers & WellKnownSpaces & PromiseMarket<{
- *   runStakeBundle: SourceBundle,
- *   client: ClientManager,
- *   lienBridge: StakingAuthority,
- * }>} RunStakeBootstrapPowers
+ * @typedef {EconomyBootstrapPowers &
+ *   WellKnownSpaces &
+ *   PromiseMarket<{
+ *     runStakeBundle: SourceBundle;
+ *     client: ClientManager;
+ *     lienBridge: StakingAuthority;
+ *   }>} RunStakeBootstrapPowers
  */
 
 /**
- * @param {RunStakeBootstrapPowers } powers
+ * @param {RunStakeBootstrapPowers} powers
  * @param {Object} config
  * @param {Rational} config.mintingRatio ratio of RUN minted to BLD
  * @param {bigint} config.interestRateBP
  * @param {bigint} config.loanFeeBP
  * @param {bigint} config.chargingPeriod
  * @param {bigint} config.recordingPeriod
+ *
  * @typedef {[bigint, bigint]} Rational
- * @typedef {Awaited<ReturnType<typeof import('./runStake/runStake.js').start>>} StartRunStake
+ *
+ * @typedef {Awaited<
+ *   ReturnType<typeof import('./runStake/runStake.js').start>
+ * >} StartRunStake
  */
 export const startRunStake = async (
   {
@@ -609,7 +616,12 @@ export const startRunStake = async (
     },
   );
 
-  /** @type {{ publicFacet: GovernorPublic, creatorFacet: GovernedContractFacetAccess<unknown>}} */
+  /**
+   * @type {{
+   *   publicFacet: GovernorPublic;
+   *   creatorFacet: GovernedContractFacetAccess<unknown>;
+   * }}
+   */
   const governorFacets = await E(zoe).startInstance(
     installations.governor,
     {},
