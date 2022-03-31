@@ -1,4 +1,4 @@
-/* global process setTimeout setInterval clearInterval */
+/* eslint-env node */
 /* eslint-disable no-await-in-loop */
 
 import { E, makeCapTP } from '@endo/captp';
@@ -7,12 +7,17 @@ import bundleSource from '@endo/bundle-source';
 import { search as readContainingPackageDescriptor } from '@endo/compartment-mapper';
 import url from 'url';
 import path from 'path';
+import http from 'http';
 import inquirer from 'inquirer';
+import chalk from 'chalk';
 import createEsmRequire from 'esm';
-
 import { createRequire } from 'module';
 
 import { getAccessToken } from '@agoric/access-token';
+import { makeBundlePublisher } from '@agoric/publish-bundle';
+import { makeJsonHttpClient } from '@agoric/publish-bundle/node-powers.js';
+import { makeCosmosBundlePublisher } from './publish.js';
+import { makePspawn, getSDKBinaries } from './helpers.js';
 
 const require = createRequire(import.meta.url);
 const esmRequire = createEsmRequire({});
@@ -34,7 +39,7 @@ const RETRY_DELAY_MS = 1000;
 const PATH_SEP_RE = new RegExp(`${path.sep.replace(/\\/g, '\\\\')}`, 'g');
 
 export default async function deployMain(progname, rawArgs, powers, opts) {
-  const { anylogger, fs, makeWebSocket, now } = powers;
+  const { anylogger, fs, spawn, makeWebSocket, now } = powers;
   const console = anylogger('agoric:deploy');
 
   const allowUnsafePlugins = opts.allowUnsafePlugins;
@@ -60,6 +65,14 @@ export default async function deployMain(progname, rawArgs, powers, opts) {
     .map(dep => dep.trim())
     .filter(dep => dep)
     .sort();
+
+  const sdkPrefixes = {};
+  if (!opts.sdk) {
+    // TODO importMetaResolve should be more reliable.
+    const agoricPrefix = path.resolve(`node_modules/@agoric`);
+    sdkPrefixes.goPfx = agoricPrefix;
+    sdkPrefixes.jsPfx = agoricPrefix;
+  }
 
   const need = opts.need
     .split(',')
@@ -90,9 +103,60 @@ export default async function deployMain(progname, rawArgs, powers, opts) {
     1000,
   );
 
-  const retryWebsocket = async () => {
-    const accessToken = await getAccessToken(opts.hostport);
+  const accessToken = await getAccessToken(opts.hostport);
 
+  const jsonHttpCall = makeJsonHttpClient({ http });
+
+  const listConnections = async () => {
+    const { ok, connections } = await jsonHttpCall({
+      hostname: host,
+      port,
+      method: 'GET',
+      path: `/connections?accessToken=${encodeURIComponent(accessToken)}`,
+    });
+    assert(
+      ok === true,
+      `Expected JSON body "ok" property to be true for HTTP request for chain connections`,
+    );
+    return connections;
+  };
+
+  const getDefaultConnection = async () => {
+    const connections = await listConnections();
+    console.log('\nConnection options:');
+    const lookup = new Map(
+      connections.map((connection, index) => {
+        console.log(`${index + 1}.`, connection);
+        return [`${index + 1}`, connection];
+      }),
+    );
+    const { connectionNumber } = await inquirer.prompt({
+      name: 'connectionNumber',
+      message: 'Please choose a connection to publish to',
+      choices: lookup.keys(),
+    });
+    const connection = lookup.get(connectionNumber);
+    console.log({ connection });
+    return connection;
+  };
+
+  const pspawnEnv = { ...process.env, DEBUG: 'agoric,deploy,deploy:publish' };
+  const pspawn = makePspawn({ env: pspawnEnv, spawn, log: console, chalk });
+  const { cosmosHelper } = getSDKBinaries(sdkPrefixes);
+  const publishBundleCosmos = makeCosmosBundlePublisher({
+    pspawn,
+    cosmosHelper,
+    pathResolve: path.resolve,
+    writeFile: fs.writeFile,
+  });
+  const publishBundle = makeBundlePublisher({
+    getAccessToken,
+    jsonHttpCall,
+    publishBundleCosmos,
+    getDefaultConnection,
+  });
+
+  const retryWebsocket = async () => {
     // For a WebSocket we need to put the token in the query string.
     const wsWebkey = `${wsurl}?accessToken=${encodeURIComponent(accessToken)}`;
 
@@ -276,6 +340,8 @@ export { bootPlugin } from ${JSON.stringify(absPath)};
             await main(bootP, {
               bundleSource: (file, options = undefined) =>
                 bundleSource(pathResolve(file), options),
+              publishBundle,
+              listConnections,
               pathResolve,
               installUnsafePlugin,
               /**
