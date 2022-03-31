@@ -28,7 +28,8 @@
     "lint-fix": "eslint --fix .",
     "lint:js": "eslint .",
     "lint:types": "tsc -p jsconfig.json",
-    "test": "ava"
+    "test": "ava",
+    "test:xs": "exit 0"
   },
   "dependencies": {},
   "devDependencies": {
