@@ -7,9 +7,11 @@
 import '@agoric/swingset-vat/tools/prepare-test-env.js';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import test from 'ava';
+import http from 'http';
 
 import bundleSource from '@endo/bundle-source';
 import { makeBundlePublisher } from '@agoric/publish-bundle';
+import { makeJsonHttpClient } from '@agoric/publish-bundle/node-powers.js';
 import { AmountMath } from '@agoric/ertp';
 import { Far } from '@endo/marshal';
 import { resolve as importMetaResolve } from 'import-meta-resolve';
@@ -79,7 +81,18 @@ test.serial('home.wallet - receive zoe invite', async t => {
   const contractRoot = new URL(contractUrl).pathname;
   t.log({ contractRoot });
   const bundle = await bundleSource(contractRoot);
-  const installationHandle = await E(zoe).install(bundle);
+  const publishBundle = makeBundlePublisher({
+    getAccessToken() {
+      return '';
+    },
+    jsonHttpCall: makeJsonHttpClient({ http }),
+  });
+  const hashBundle = await publishBundle(bundle, {
+    type: 'http',
+    port: SOLO_PORT,
+    host: '127.0.0.1',
+  });
+  const installationHandle = await E(zoe).install(hashBundle);
   const { creatorInvitation: invite } = await E(zoe).startInstance(
     installationHandle,
   );
