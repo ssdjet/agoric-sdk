@@ -128,7 +128,7 @@ test('high resolution timer', async t => {
     `);
   const [milliseconds] = opts.messages.map(s => JSON.parse(s));
   t.log({ milliseconds, date: new Date(milliseconds) });
-  t.is('number', typeof milliseconds);
+  t.is(typeof milliseconds, 'number');
 });
 
 test('metering can be switched off / on at run-time', async t => {
@@ -178,7 +178,7 @@ test('metering switch - start compartment only', async t => {
     }
   `);
   await vat.close();
-  t.deepEqual(['no meteringSwitch in Compartment'], opts.messages);
+  t.deepEqual(opts.messages, ['no meteringSwitch in Compartment']);
 });
 
 /** @param {number} logn */
@@ -223,7 +223,7 @@ function dataStructurePerformance(logn) {
 // Rather than have a very low-probability failing test, we skip this, but
 // retain the benchmark for future verification in the unlikely event that the
 // performance character of XS collections regresses.
-test.skip('Array, Map, Set growth is O(log(n))', async t => {
+test.failing('Array, Map, Set growth is O(log(n))', async t => {
   const opts = options(io);
   const vat = xsnap({ ...opts, meteringLimit: 0 });
   await vat.evaluate(

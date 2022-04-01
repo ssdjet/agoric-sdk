@@ -29,8 +29,8 @@ test('build temp file; compress to cache file', async t => {
     keepTmp = fn;
   });
   t.is(
-    'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
     hash,
+    'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
   );
   t.falsy(
     fs.existsSync(keepTmp),
@@ -69,7 +69,7 @@ test('snapStore prepare / commit delete is robust', async t => {
 
   store.prepareToDelete(hashes[2]);
   store.commitDeletes();
-  t.deepEqual(fs.readdirSync(pool.name).length, 4);
+  t.is(fs.readdirSync(pool.name).length, 4);
 
   // Restore (re-save) between prepare and commit.
   store.prepareToDelete(hashes[3]);

@@ -1,4 +1,5 @@
 // @ts-check
+/* eslint-disable no-lone-blocks */
 /* global process setTimeout */
 import fs from 'fs';
 import path from 'path';

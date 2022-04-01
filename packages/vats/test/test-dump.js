@@ -4,7 +4,7 @@ import test from 'ava';
 import { dump } from '../src/repl.js';
 
 // Taken from https://github.com/endojs/endo/tree/main/packages/ses/test/error/test-assert-log.js#L414
-test('dump: the @erights challenge', async t => {
+test('dump: the @erights challenge', t => {
   const superTagged = { [Symbol.toStringTag]: 'Tagged' };
   const subTagged = { __proto__: superTagged };
   const subTaggedNonEmpty = { __proto__: superTagged, foo: 'x' };

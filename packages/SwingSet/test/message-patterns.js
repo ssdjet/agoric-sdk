@@ -1,5 +1,4 @@
-/* eslint no-lone-blocks: "off" */
-/* eslint dot-notation: "off" */
+/* eslint-disable no-lone-blocks, dot-notation */
 // I turned off dot-notation so eslint won't rewrite the grep-preserving
 // test.stuff patterns.
 

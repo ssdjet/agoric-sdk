@@ -11,6 +11,7 @@ import {
   getPassStyleCover,
   assertRankSorted,
 } from '../src/patterns/rankOrder.js';
+// eslint-disable-next-line ava/no-import-test-files
 import { assertionPassed } from './test-store.js';
 
 const { quote: q } = assert;

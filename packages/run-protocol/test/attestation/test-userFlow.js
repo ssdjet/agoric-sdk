@@ -9,6 +9,7 @@ import { setupZCFTest } from '@agoric/zoe/test/unitTests/zcf/setupZcfTest.js';
 
 import { makeCopyBag } from '@agoric/store';
 import { makeAttestationFacets } from '../../src/runStake/attestation.js';
+// eslint-disable-next-line ava/no-import-test-files
 import { makeMockLienBridge } from './test-attestation.js';
 
 const makeDoReturnAttestation =

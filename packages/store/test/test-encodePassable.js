@@ -10,7 +10,9 @@ import {
   makeDecodePassable,
 } from '../src/patterns/encodePassable.js';
 import { compareRank, makeComparatorKit } from '../src/patterns/rankOrder.js';
+// eslint-disable-next-line ava/no-import-test-files
 import { assertionPassed } from './test-store.js';
+// eslint-disable-next-line ava/no-import-test-files
 import { sample } from './test-rankOrder.js';
 
 const { details: X } = assert;

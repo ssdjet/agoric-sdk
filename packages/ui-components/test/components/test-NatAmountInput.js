@@ -1,5 +1,5 @@
 // @ts-check
-
+/* eslint-disable ava/no-ignored-test-files -- this JSX is compiled to the actual test file */
 import '@endo/init';
 import React from 'react';
 import { TextField } from '@material-ui/core';
@@ -117,7 +117,7 @@ test('error=true', t => {
   t.is(input.attr('aria-invalid'), 'true');
 });
 
-test('can simulate input - just calls onChange', async t => {
+test('can simulate input - just calls onChange', t => {
   let receivedValue;
   const onChange = newValue => {
     receivedValue = newValue;

@@ -321,7 +321,7 @@ const expectedBadTimerLog = [
 ];
 
 // TODO: Unskip. See https://github.com/Agoric/agoric-sdk/issues/1625
-test.skip('zoe - bad timer', async t => {
+test.failing('zoe - bad timer', async t => {
   const startingValues = [
     [3, 0, 0],
     [0, 0, 0],

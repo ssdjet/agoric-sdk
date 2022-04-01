@@ -139,13 +139,13 @@ test.serial('home.localTimerService makeNotifier', async t => {
   const notifier = E(localTimerService).makeNotifier(1, 1);
   const update1 = await E(notifier).getUpdateSince();
   const firstUpdate = update1.updateCount;
-  t.truthy(firstUpdate > 0);
+  t.true(firstUpdate > 0);
   const update2 = await E(notifier).getUpdateSince(update1.updateCount);
   t.is(update2.updateCount, firstUpdate + 1);
 
   // Tests gets an actual localTimerService, which returns actual times. We
   // can't verify the actual time, so we compare to make sure it's increasing.
-  t.truthy(update2.value > update1.value);
+  t.true(update2.value > update1.value);
 });
 
 function makeHandler() {
@@ -174,8 +174,8 @@ test.serial('home.localTimerService makeRepeater', async t => {
   const notifier = E(localTimerService).makeNotifier(1, 1);
   await E(notifier).getUpdateSince();
 
-  t.truthy(handler.getCalls() >= 1);
-  t.truthy(handler.getArgs()[0] > timestamp);
+  t.true(handler.getCalls() >= 1);
+  t.true(handler.getArgs()[0] > timestamp);
 });
 
 // =========================================
