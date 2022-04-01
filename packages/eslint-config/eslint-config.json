@@ -5,6 +5,7 @@
     "plugin:ava/recommended"
   ],
   "rules": {
+    "ava/use-test": "off", // until https://github.com/avajs/eslint-plugin-ava/pull/294#issuecomment-1084648317
     "jsdoc/no-multi-asterisks": "off",
     "jsdoc/multiline-blocks": "off",
     // Use these rules to warn about JSDoc type problems, such as after
