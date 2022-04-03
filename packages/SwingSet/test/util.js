@@ -100,6 +100,7 @@ export function capargsOneSlot(slot, iface = 'export') {
 }
 
 export function makeMessage(target, method, args, result = null) {
+
   const msg = { method, args, result };
   const vatDeliverObject = harden(['message', target, msg]);
   return vatDeliverObject;
