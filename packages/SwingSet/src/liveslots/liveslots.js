@@ -12,7 +12,7 @@ import {
   parseVatSlot,
 } from '../lib/parseVatSlots.js';
 import { insistCapData } from '../lib/capdata.js';
-import { insistMessage } from '../lib/message.js';
+import { insistMessage, extractMethod } from '../lib/message.js';
 import { makeVirtualReferenceManager } from './virtualReferences.js';
 import { makeVirtualObjectManager } from './virtualObjectManager.js';
 import { makeCollectionManager } from './collectionManager.js';
@@ -821,17 +821,10 @@ function build(
   }
 
   function queueMessage(targetSlot, prop, args, returnedP) {
-    if (typeof prop === 'symbol') {
-      if (prop === Symbol.asyncIterator) {
-        // special-case this Symbol for now, will be replaced in #2481
-        prop = 'Symbol.asyncIterator';
-      } else {
-        throw Error(`arbitrary Symbols cannot be used as method names`);
-      }
-    }
+    const methargs = [prop, args];
 
     meterControl.assertIsMetered(); // else userspace getters could escape
-    const serArgs = m.serialize(harden(args));
+    const serArgs = m.serialize(harden(methargs));
     serArgs.slots.map(retainExportedVref);
     const resultVPID = allocatePromiseID();
     lsdebug(`Promise allocation ${forVatID}:${resultVPID} in queueMessage`);
@@ -921,12 +914,13 @@ function build(
     return pr;
   }
 
-  function deliver(target, method, argsdata, result) {
+  function deliver(target, methargsdata, result) {
     assert(didStartVat);
     assert(!didStopVat);
-    insistCapData(argsdata);
+    insistCapData(methargsdata);
+
     lsdebug(
-      `ls[${forVatID}].dispatch.deliver ${target}.${method} -> ${result}`,
+      `ls[${forVatID}].dispatch.deliver ${target}.${extractMethod(methargsdata)} -> ${result}`,
     );
     const t = convertSlotToVal(target);
     assert(t, X`no target ${target}`);
@@ -940,12 +934,9 @@ function build(
     // the same vpid as a result= twice, or getting a result= for an exported
     // promise (for which we were already the decider).
 
-    if (method === 'Symbol.asyncIterator') {
-      method = Symbol.asyncIterator;
-    }
-
     meterControl.assertNotMetered();
-    const args = m.unserialize(argsdata);
+    const methargs = m.unserialize(methargsdata);
+    const [method, args] = methargs;
 
     // If the method is missing, or is not a Function, or the method throws a
     // synchronous exception, we notify the caller (by rejecting the result
@@ -1313,7 +1304,7 @@ function build(
       case 'message': {
         const [targetSlot, msg] = args;
         insistMessage(msg);
-        deliver(targetSlot, msg.method, msg.args, msg.result);
+        deliver(targetSlot, msg.methargs, msg.result);
         break;
       }
       case 'notify': {

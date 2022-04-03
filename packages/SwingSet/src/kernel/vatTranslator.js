@@ -1,6 +1,6 @@
 // @ts-check
 import { assert, details as X } from '@agoric/assert';
-import { insistMessage } from '../lib/message.js';
+import { insistMessage, extractMethod } from '../lib/message.js';
 import { insistKernelType, parseKernelSlot } from './parseKernelSlots.js';
 import { insistVatType, parseVatSlot } from '../lib/parseVatSlots.js';
 import { extractSingleSlot, insistCapData } from '../lib/capdata.js';
@@ -26,7 +26,7 @@ function makeTranslateKernelDeliveryToVatDelivery(vatID, kernelKeeper) {
   const vatKeeper = kernelKeeper.provideVatKeeper(vatID);
   const { mapKernelSlotToVatSlot } = vatKeeper;
 
-  // msg is { method, args, result }, all slots are kernel-centric
+  // msg is { methargs, result }, all slots are kernel-centric
   function translateMessage(target, msg) {
     insistMessage(msg);
     const targetSlot = mapKernelSlotToVatSlot(target);
@@ -37,7 +37,7 @@ function makeTranslateKernelDeliveryToVatDelivery(vatID, kernelKeeper) {
       const p = kernelKeeper.getKernelPromise(target);
       assert(p.decider === vatID, 'wrong decider');
     }
-    const inputSlots = msg.args.slots.map(slot => mapKernelSlotToVatSlot(slot));
+    const inputSlots = msg.methargs.slots.map(slot => mapKernelSlotToVatSlot(slot));
     let resultSlot = null;
     if (msg.result) {
       insistKernelType('promise', msg.result);
@@ -56,8 +56,7 @@ function makeTranslateKernelDeliveryToVatDelivery(vatID, kernelKeeper) {
     }
 
     const vatMessage = harden({
-      method: msg.method,
-      args: { ...msg.args, slots: inputSlots },
+      methargs: { ...msg.methargs, slots: inputSlots },
       result: resultSlot,
     });
     /** @type { VatDeliveryMessage } */
@@ -246,15 +245,16 @@ function makeTranslateVatSyscallToKernelSyscall(vatID, kernelKeeper) {
   function translateSend(targetSlot, msg) {
     assert.typeof(targetSlot, 'string', 'non-string targetSlot');
     insistMessage(msg);
-    const { method, args, result: resultSlot } = msg;
-    insistCapData(args);
+    const { methargs, result: resultSlot } = msg;
+    insistCapData(methargs);
     // TODO: disable send-to-self for now, qv issue #43
     const target = mapVatSlotToKernelSlot(targetSlot);
-    const argList = legibilizeMessageArgs(args).join(', ');
+    const argList = legibilizeMessageArgs(methargs).join(', ');
+    const method = extractMethod(methargs);
     // prettier-ignore
     kdebug(`syscall[${vatID}].send(${targetSlot}/${target}).${method}(${argList})`);
-    const kernelSlots = args.slots.map(slot => mapVatSlotToKernelSlot(slot));
-    const kernelArgs = harden({ ...args, slots: kernelSlots });
+    const kernelSlots = methargs.slots.map(slot => mapVatSlotToKernelSlot(slot));
+    const kernelArgs = harden({ ...methargs, slots: kernelSlots });
     let result = null;
     if (resultSlot) {
       insistVatType('promise', resultSlot);
@@ -292,8 +292,7 @@ function makeTranslateVatSyscallToKernelSyscall(vatID, kernelKeeper) {
     }
 
     const kmsg = harden({
-      method,
-      args: kernelArgs,
+      methargs: kernelArgs,
       result,
     });
     insistMessage(kmsg);

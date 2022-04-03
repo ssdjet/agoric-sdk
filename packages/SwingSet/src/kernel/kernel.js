@@ -12,7 +12,7 @@ import { kdebug, kdebugEnable, legibilizeMessageArgs } from '../lib/kdebug.js';
 import { insistKernelType, parseKernelSlot } from './parseKernelSlots.js';
 import { parseVatSlot } from '../lib/parseVatSlots.js';
 import { extractSingleSlot, insistCapData } from '../lib/capdata.js';
-import { insistMessage, insistVatDeliveryResult } from '../lib/message.js';
+import { insistMessage, insistVatDeliveryResult, extractMethod } from '../lib/message.js';
 import { insistDeviceID, insistVatID } from '../lib/id.js';
 import { makeKernelQueueHandler } from './kernelQueue.js';
 import { makeKernelSyscallHandler } from './kernelSyscall.js';
@@ -692,9 +692,10 @@ export default function buildKernel(
   function legibilizeMessage(message) {
     if (message.type === 'send') {
       const msg = message.msg;
-      const argList = legibilizeMessageArgs(msg.args).join(', ');
+      const argList = legibilizeMessageArgs(msg.methargs).join(', ');
       const result = msg.result ? msg.result : 'null';
-      return `@${message.target} <- ${msg.method}(${argList}) : @${result}`;
+      const method = extractMethod(msg.methargs);
+      return `@${message.target} <- ${method}(${argList}) : @${result}`;
     } else if (message.type === 'notify') {
       return `notify(vatID: ${message.vatID}, kpid: @${message.kpid})`;
     } else if (message.type === 'create-vat') {
@@ -772,7 +773,8 @@ export default function buildKernel(
           return send(targetSlot);
         }
         // TODO: maybe mimic (3).foo(): "TypeError: XX.foo is not a function"
-        const s = `data is not callable, has no method ${msg.method}`;
+        const method = extractMethod(msg.methargs);
+        const s = `data is not callable, has no method ${method}`;
         return splat(makeError(s));
       }
       case 'rejected': {
@@ -807,7 +809,7 @@ export default function buildKernel(
       kernelKeeper.decrementRefCount(message.msg.result, `deq|msg|r`);
     }
     let idx = 0;
-    for (const argSlot of message.msg.args.slots) {
+    for (const argSlot of message.msg.methargs.slots) {
       kernelKeeper.decrementRefCount(argSlot, `deq|msg|s${idx}`);
       idx += 1;
     }

@@ -74,7 +74,7 @@ export function makeKernelQueueHandler(tools) {
       kernelKeeper.incrementRefCount(msg.result, `enq|msg|r`);
     }
     let idx = 0;
-    for (const argSlot of msg.args.slots) {
+    for (const argSlot of msg.methargs.slots) {
       kernelKeeper.incrementRefCount(argSlot, `enq|msg|s${idx}`);
       idx += 1;
     }
@@ -108,7 +108,13 @@ export function makeKernelQueueHandler(tools) {
     // Should we actually increment these stats in this case?
     kernelKeeper.incStat('syscalls');
     kernelKeeper.incStat('syscallSend');
-    const msg = harden({ method, args, result: resultKPID });
+    const { body: abody, slots } = args;
+    const argsdata = JSON.parse(abody);
+    const methargsdata = [method, argsdata];
+    const methargsbody = JSON.stringify(methargsdata);
+    const methargs = { body: methargsbody, slots };
+    //const methargs = { ...args, body: JSON.stringify([method, JSON.parse(args.body)]) };
+    const msg = harden({ methargs, result: resultKPID });
     doSend(kref, msg);
     return resultKPID;
   }

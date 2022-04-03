@@ -836,7 +836,7 @@ export default function makeKernelKeeper(
       incrementRefCount(msg.result, `pq|${kernelSlot}|r`);
     }
     let idx = 0;
-    for (const kref of msg.args.slots) {
+    for (const kref of msg.methargs.slots) {
       // eslint-disable-next-line no-use-before-define
       incrementRefCount(kref, `pq|${kernelSlot}|s${idx}`);
       idx += 1;

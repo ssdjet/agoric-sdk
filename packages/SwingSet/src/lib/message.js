@@ -15,12 +15,7 @@ import { insistCapData } from './capdata.js';
  * @returns { asserts message is Message }
  */
 export function insistMessage(message) {
-  assert.typeof(
-    message.method,
-    'string',
-    X`message has non-string .method ${message.method}`,
-  );
-  insistCapData(message.args);
+  insistCapData(message.methargs);
   if (message.result) {
     assert.typeof(
       message.result,
@@ -29,6 +24,10 @@ export function insistMessage(message) {
     );
   }
   return undefined;
+}
+
+export function extractMethod(methargs) {
+  return JSON.parse(methargs.body)[0];
 }
 
 /**
