@@ -14,6 +14,7 @@ export default [
   "@agoric/import-manager",
   "@agoric/notifier",
   "@agoric/pegasus",
+  "@agoric/publish-bundle",
   "@agoric/run-protocol",
   "@agoric/same-structure",
   "@agoric/sharing-service",
