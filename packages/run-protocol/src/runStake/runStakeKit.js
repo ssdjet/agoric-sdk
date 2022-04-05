@@ -118,7 +118,6 @@ export const makeRunStakeKit = (zcf, startSeat, manager) => {
     const result = harden({
       // TODO move manager state to a separate notifer https://github.com/Agoric/agoric-sdk/issues/4540
       interestRate: manager.getInterestRate(),
-      liquidationRatio: manager.getMintingRatio(),
       debtSnapshot: { debt, interest },
       locked: getCollateralAmount(),
       // newPhase param is so that makeTransferInvitation can finish without setting the vault's phase
