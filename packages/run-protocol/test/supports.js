@@ -18,7 +18,7 @@ import { E } from '@endo/far';
  * @param {*} t
  * @param {string} sourceRoot
  * @param {string} bundleName
- * @returns {Promise<SourceBundle>}
+ * @returns {Promise<Record<string, string>>}
  */
 export const provideBundle = (t, sourceRoot, bundleName) => {
   assert(
