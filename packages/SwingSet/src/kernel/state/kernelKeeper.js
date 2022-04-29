@@ -833,27 +833,6 @@ export default function makeKernelKeeper(
     insistKernelType('promise', kernelSlot);
     insistMessage(msg);
 
-    // Each message on a promise's queue maintains a refcount to the promise
-    // itself. This isn't strictly necessary (the promise will be kept alive
-    // by the deciding vat's clist, or the queued message that holds this
-    // promise as its result), but it matches our policy with run-queue
-    // messages (each holds a refcount on its target), and makes it easier to
-    // transfer these messages back to the run-queue in
-    // resolveKernelPromise() (which doesn't touch any of the refcounts).
-
-    // eslint-disable-next-line no-use-before-define
-    incrementRefCount(kernelSlot, `pq|${kernelSlot}|t`);
-    if (msg.result) {
-      // eslint-disable-next-line no-use-before-define
-      incrementRefCount(msg.result, `pq|${kernelSlot}|r`);
-    }
-    let idx = 0;
-    for (const kref of msg.args.slots) {
-      // eslint-disable-next-line no-use-before-define
-      incrementRefCount(kref, `pq|${kernelSlot}|s${idx}`);
-      idx += 1;
-    }
-
     const p = getKernelPromise(kernelSlot);
     assert(
       p.state === 'unresolved',

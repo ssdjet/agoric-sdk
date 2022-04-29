@@ -737,7 +737,7 @@ export default function buildKernel(
    * This does not decrement any refcounts. The caller should do that.
    *
    * @param { RunQueueEventSend } message
-   * @returns { { vatID: VatID, targetObject: string } | null }
+   * @returns { { vatID: VatID | null, targetObject: string } | null }
    */
   function routeSendEvent(message) {
     const { target, msg } = message;
@@ -762,9 +762,9 @@ export default function buildKernel(
       return { vatID, targetObject };
     }
 
-    function enqueue() {
-      kernelKeeper.addMessageToPromiseQueue(target, msg);
-      return null; // message is queued, not sent to a vat right now
+    function requeue() {
+      // message will be requeued, not sent to a vat right now
+      return { vatID: null, targetObject: target };
     }
 
     if (type === 'object') {
@@ -788,7 +788,7 @@ export default function buildKernel(
       }
       case 'unresolved': {
         if (!kp.decider) {
-          return enqueue();
+          return requeue();
         } else {
           insistVatID(kp.decider);
           // eslint-disable-next-line no-use-before-define
@@ -800,7 +800,7 @@ export default function buildKernel(
           if (deciderVat.enablePipelining) {
             return { vatID: kp.decider, targetObject: target };
           }
-          return enqueue();
+          return requeue();
         }
       }
       default:
@@ -881,10 +881,20 @@ export default function buildKernel(
     if (message.type === 'send') {
       useMeter = true;
       const route = routeSendEvent(message);
-      decrementSendEventRefCount(message);
-      if (route) {
+      if (!route) {
+        // Message went splat
+        decrementSendEventRefCount(message);
+      } else {
         vatID = route.vatID;
-        deliverP = processSend(vatID, route.targetObject, message.msg);
+        if (vatID) {
+          decrementSendEventRefCount(message);
+          deliverP = processSend(vatID, route.targetObject, message.msg);
+        } else {
+          kernelKeeper.addMessageToPromiseQueue(
+            route.targetObject,
+            message.msg,
+          );
+        }
       }
     } else if (message.type === 'notify') {
       useMeter = true;
@@ -1089,7 +1099,29 @@ export default function buildKernel(
     /** @type { PolicyInput } */
     const policyInput = ['none'];
 
-    kernelKeeper.addToRunQueue(message);
+    if (message.type === 'send') {
+      const route = routeSendEvent(message);
+      if (!route) {
+        // Message went splat
+        decrementSendEventRefCount(message);
+      } else {
+        const { vatID, targetObject: target } = route;
+        if (target !== message.target) {
+          kernelKeeper.decrementRefCount(message.target, `deq|msg|t`);
+          kernelKeeper.incrementRefCount(target, `enq|msg|t`);
+        }
+        if (vatID) {
+          kernelKeeper.addToRunQueue({
+            ...message,
+            target,
+          });
+        } else {
+          kernelKeeper.addMessageToPromiseQueue(target, message.msg);
+        }
+      }
+    } else {
+      kernelKeeper.addToRunQueue(message);
+    }
 
     kernelKeeper.processRefcounts();
     kernelKeeper.saveStats();
