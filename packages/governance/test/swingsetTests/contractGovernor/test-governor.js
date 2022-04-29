@@ -155,8 +155,8 @@ const expectedBrokenUpdateLog = [
   '&& running a task scheduled for 2. &&',
   'vote outcome: {"changes":{"Electorate":{"brand":"[Alleged: Zoe Invitation brand]","value":[{"description":"questionPoser","handle":"[Alleged: InvitationHandle]","installation":"[Alleged: Installation]","instance":"[Alleged: InstanceHandle]"}]},"MalleableNumber":"[42n]"}}',
   'Validation complete: true',
-  'vote rejected outcome: Error: (an object) was not a live payment for brand (an object). It could be a used-up payment, a payment for another brand, or it might not be a payment at all.',
-  'update failed: Error: (an object) was not a live payment for brand (an object). It could be a used-up payment, a payment for another brand, or it might not be a payment at all.',
+  'vote rejected outcome: Error: A Zoe invitation is required, not (an object)',
+  'update failed: Error: A Zoe invitation is required, not (an object)',
   'current value of MalleableNumber is 602214090000000000000000',
   'Electorate,MalleableNumber changed in a vote.',
 ];
