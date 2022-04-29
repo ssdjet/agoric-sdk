@@ -18,7 +18,7 @@ import { Far } from '@endo/marshal';
 import { AmountMath } from '@agoric/ertp';
 import { assertKeywordName } from '@agoric/zoe/src/cleanProposal.js';
 import { defineKindMulti } from '@agoric/vat-data';
-import { observeIteration } from '@agoric/notifier';
+import { makeNotifierKit, observeIteration } from '@agoric/notifier';
 import { makeVaultManager } from './vaultManager.js';
 import { makeMakeCollectFeesInvitation } from '../collectFees.js';
 import {
@@ -33,6 +33,13 @@ import {
 const { details: X } = assert;
 
 /**
+ * @typedef {{
+ * governedValues: {}, // ??? what type? ??? aren't there already subscriptions?
+ * collaterals: Brand[],
+ * penaltyPoolAllocation: AmountKeywordRecord,
+ * rewardPoolAllocation: AmountKeywordRecord,
+ * }} EconState
+ *
  * @typedef {Readonly<{
  * debtMint: ZCFMint<'nat'>,
  * collateralTypes: Store<Brand,VaultManager>,
@@ -42,6 +49,7 @@ const { details: X } = assert;
  * penaltyPoolSeat: ZCFSeat,
  * rewardPoolSeat: ZCFSeat,
  * vaultParamManagers: Store<Brand, import('./params.js').VaultParamManager>,
+ * econUpdater: IterationObserver<EconState>
  * zcf: import('./vaultFactory.js').VaultFactoryZCF,
  * }>} ImmutableState
  *
@@ -72,6 +80,9 @@ const initState = (zcf, directorParamManager, debtMint) => {
 
   const vaultParamManagers = makeScalarMap('brand');
 
+  // XXX need a way to register this data stream for consumption
+  const { updater: econMetrics } = makeNotifierKit();
+
   return {
     collateralTypes,
     debtMint,
@@ -79,6 +90,7 @@ const initState = (zcf, directorParamManager, debtMint) => {
     mintSeat,
     rewardPoolSeat,
     penaltyPoolSeat,
+    econMetrics,
     vaultParamManagers,
     zcf,
   };
@@ -142,12 +154,21 @@ const getCollaterals = async ({ state }) => {
     ),
   );
 };
-
+/**
+ * @param {ImmutableState['directorParamManager']} directorParamManager
+ */
 const getLiquidationConfig = directorParamManager => ({
   install: directorParamManager.getInstallation(LIQUIDATION_INSTALL_KEY),
   terms: directorParamManager.getUnknown(LIQUIDATION_TERMS_KEY),
 });
 
+/**
+ *
+ * @param {ImmutableState['directorParamManager']} govParams
+ * @param {VaultManager} vaultManager
+ * @param {*} oldInstall
+ * @param {*} oldTerms
+ */
 const watchGovernance = (govParams, vaultManager, oldInstall, oldTerms) => {
   const subscription = govParams.getSubscription();
   observeIteration(subscription, {
@@ -175,7 +196,7 @@ const machineBehavior = {
    * @param {VaultManagerParamValues} initialParamValues
    */
   addVaultType: async (
-    { state },
+    { state, facets },
     collateralIssuer,
     collateralKeyword,
     initialParamValues,
@@ -240,6 +261,7 @@ const machineBehavior = {
       }
       // TODO add aggregate debt tracking at the vaultFactory level #4482
       // totalDebt = AmountMath.add(totalDebt, toMint);
+      facets.machine.notifyEcon();
     };
 
     /**
@@ -277,6 +299,7 @@ const machineBehavior = {
     // console.log('PARAM UPDATE', install, terms);
     await vm.setupLiquidator(install, terms);
     watchGovernance(directorParamManager, vm, install, terms);
+    facets.machine.notifyEcon();
     return vm;
   },
   getCollaterals,
@@ -292,6 +315,17 @@ const machineBehavior = {
   },
   /** @param {MethodContext} context */
   getContractGovernor: ({ state }) => state.zcf.getTerms().electionManager,
+  /** @param {MethodContext} context */
+  notifyEcon: ({ state }) => {
+    /** @type {EconState} */
+    const econState = harden({
+      collaterals: Array.from(state.collateralTypes.keys()),
+      governedValues: state.directorParamManager.readonly, // FIXME what should this be?
+      penaltyPoolAllocation: state.penaltyPoolSeat.getCurrentAllocation(),
+      rewardPoolAllocation: state.rewardPoolSeat.getCurrentAllocation(),
+    });
+    state.econUpdater.updateState(econState);
+  },
 
   // XXX accessors for tests
   /** @param {MethodContext} context */
