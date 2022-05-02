@@ -13,7 +13,7 @@ import { makeWeakStore } from '@agoric/store';
 export const makeInstallationStorage = getBundleCapForID => {
   /** @type {WeakStore<Installation, { bundleCap: BundleCap, bundleID: BundleID }>} */
   const installationsBundleCap = makeWeakStore('installationsBundleCap');
-  /** @type {WeakStore<Installation, SourceBundle>} */
+  /** @type {WeakStore<Installation, Record<string, unknown>>} */
   const installationsBundle = makeWeakStore('installationsBundle');
 
   /**
@@ -25,18 +25,6 @@ export const makeInstallationStorage = getBundleCapForID => {
    * creating a zcfZygote, then the start() function will be called each time
    * an instance is started.
    */
-
-  /** @type {InstallBundle} */
-  const installBundle = async bundle => {
-    assert.typeof(bundle, 'object', 'a bundle must be provided');
-    /** @type {Installation} */
-    // @ts-expect-error cast
-    const installation = Far('Installation', {
-      getBundle: () => bundle,
-    });
-    installationsBundle.init(installation, bundle);
-    return installation;
-  };
 
   /** @type {InstallBundleID} */
   const installBundleID = async bundleID => {
@@ -55,6 +43,34 @@ export const makeInstallationStorage = getBundleCapForID => {
     });
     installationsBundleCap.init(installation, { bundleCap, bundleID });
     return installation;
+  };
+
+  /** @type {InstallBundle} */
+  const installSourceBundle = async bundle => {
+    assert.typeof(bundle, 'object', 'a bundle must be provided');
+    /** @type {Installation} */
+    // @ts-expect-error cast
+    const installation = Far('Installation', {
+      getBundle: () => bundle,
+    });
+    installationsBundle.init(installation, bundle);
+    return installation;
+  };
+
+  /** @type {InstallBundle} */
+  const installBundle = async bundle => {
+    assert.typeof(bundle, 'object', 'a bundle must be provided');
+    const { moduleFormat } = bundle;
+    if (moduleFormat === 'endoZipBase64Sha512') {
+      const { endoZipBase64Sha512 } = bundle;
+      assert.typeof(
+        endoZipBase64Sha512,
+        'string',
+        `bundle endoZipBase64Sha512 must be a string, got ${endoZipBase64Sha512}`,
+      );
+      return installBundleID(`b1-${endoZipBase64Sha512}`);
+    }
+    return installSourceBundle(bundle);
   };
 
   /** @type {UnwrapInstallation} */

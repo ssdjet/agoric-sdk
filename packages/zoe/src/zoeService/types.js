@@ -114,8 +114,7 @@
  * @returns {Promise<InvitationDetails>}
  */
 
-// XXX include `SourceBundle` because that's how this function is used.
-// TODO remove support for `SourceBundle`, leaving just support for `HashBundle`
+// TODO remove support for source bundles, leaving only support for hash bundles.
 // https://github.com/Agoric/agoric-sdk/issues/4565
 /**
  * @callback InstallBundle
@@ -123,7 +122,7 @@
  * Create an installation by safely evaluating the code and
  * registering it with Zoe. Returns an installation.
  *
- * @param {Bundle | SourceBundle} bundle
+ * @param {Record<string, any>} bundle
  * @returns {Promise<Installation>}
  */
 
@@ -251,6 +250,7 @@
 
 /**
  * @typedef {Object} VatAdminSvc
+ * @property {(BundleID: id) => Promise<BundleCap>} waitForBundleCap
  * @property {(BundleID: id) => Promise<BundleCap>} getBundleCap
  * @property {(name: string) => Promise<BundleCap>} getNamedBundleCap
  * @property {(bundleCap: BundleCap) => Promise<RootAndAdminNode>} createVat
@@ -258,11 +258,6 @@
 
 /**
  * @typedef {{bundleCap: BundleCap } | {name: string} | {id: BundleID}} ZCFSpec
- */
-
-/**
- * @typedef {Record<string, any>} SourceBundle
- * Opaque type for a JSONable source bundle
  */
 
 /**
