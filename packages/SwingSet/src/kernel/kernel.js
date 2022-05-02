@@ -737,7 +737,7 @@ export default function buildKernel(
    * This does not decrement any refcounts. The caller should do that.
    *
    * @param { RunQueueEventSend } message
-   * @returns { { vatID: VatID | null, targetObject: string } | null }
+   * @returns { { vatID: VatID | null, target: string } | null }
    */
   function routeSendEvent(message) {
     const { target, msg } = message;
@@ -759,12 +759,12 @@ export default function buildKernel(
       if (!vatID) {
         return splat(VAT_TERMINATION_ERROR);
       }
-      return { vatID, targetObject };
+      return { vatID, target: targetObject };
     }
 
     function requeue() {
       // message will be requeued, not sent to a vat right now
-      return { vatID: null, targetObject: target };
+      return { vatID: null, target };
     }
 
     if (type === 'object') {
@@ -798,7 +798,7 @@ export default function buildKernel(
             return splat(VAT_TERMINATION_ERROR);
           }
           if (deciderVat.enablePipelining) {
-            return { vatID: kp.decider, targetObject: target };
+            return { vatID: kp.decider, target };
           }
           return requeue();
         }
@@ -888,12 +888,9 @@ export default function buildKernel(
         vatID = route.vatID;
         if (vatID) {
           decrementSendEventRefCount(message);
-          deliverP = processSend(vatID, route.targetObject, message.msg);
+          deliverP = processSend(vatID, route.target, message.msg);
         } else {
-          kernelKeeper.addMessageToPromiseQueue(
-            route.targetObject,
-            message.msg,
-          );
+          kernelKeeper.addMessageToPromiseQueue(route.target, message.msg);
         }
       }
     } else if (message.type === 'notify') {
@@ -1105,7 +1102,7 @@ export default function buildKernel(
         // Message went splat
         decrementSendEventRefCount(message);
       } else {
-        const { vatID, targetObject: target } = route;
+        const { vatID, target } = route;
         if (target !== message.target) {
           kernelKeeper.decrementRefCount(message.target, `deq|msg|t`);
           kernelKeeper.incrementRefCount(target, `enq|msg|t`);
