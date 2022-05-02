@@ -11,6 +11,7 @@ import '@agoric/swingset-vat/tools/prepare-test-env.js';
 import test from 'ava';
 
 import bundleSource from '@endo/bundle-source';
+import { makeBundlePublisher } from '@agoric/publish-bundle';
 import { AmountMath } from '@agoric/ertp';
 import { Far } from '@endo/marshal';
 import { resolve as importMetaResolve } from 'import-meta-resolve';

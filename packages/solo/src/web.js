@@ -1,4 +1,4 @@
-/* global setTimeout clearTimeout setInterval clearInterval */
+/* eslint-env node */
 // Start a network service
 import path from 'path';
 import http from 'http';
@@ -9,6 +9,8 @@ import anylogger from 'anylogger';
 import morgan from 'morgan';
 
 import { getAccessToken } from '@agoric/access-token';
+
+const maximumBundleSize = 1024 * 1024 * 128; // 128MB
 
 const log = anylogger('web');
 
@@ -67,6 +69,8 @@ export async function makeHTTPListener(
   host,
   rawInboundCommand,
   walletHtmlDir = '',
+  validateAndInstallBundle,
+  connections,
 ) {
   // Enrich the inbound command with some metadata.
   const inboundCommand = (
@@ -119,7 +123,7 @@ export async function makeHTTPListener(
       },
     }),
   );
-  app.use(express.json()); // parse application/json
+  app.use(express.json({ limit: maximumBundleSize })); // parse application/json
   const server = http.createServer(app);
 
   // serve the static HTML for the UI
@@ -178,8 +182,8 @@ export async function makeHTTPListener(
     return false;
   };
 
-  // accept POST messages to arbitrary endpoints
-  app.post('*', async (req, res) => {
+  // accept POST messages as commands.
+  app.post('/', async (req, res) => {
     if (!(await validateAccessToken(req))) {
       res.json({ ok: false, rej: 'Unauthorized' });
       return;
@@ -192,6 +196,33 @@ export async function makeHTTPListener(
         rej => res.json({ ok: false, rej }),
       )
       .catch(_ => {});
+  });
+
+  app.get('/connections', async (req, res) => {
+    if (!(await validateAccessToken(req))) {
+      res.json({ ok: false, rej: 'Unauthorized' });
+      return;
+    }
+
+    res.json({
+      ok: true,
+      connections,
+    });
+  });
+
+  app.post('/publish-bundle', async (req, res) => {
+    if (!(await validateAccessToken(req))) {
+      res.json({ ok: false, rej: 'Unauthorized' });
+      return;
+    }
+    try {
+      const bundle = harden(req.body);
+      await validateAndInstallBundle(bundle);
+    } catch (error) {
+      res.json({ ok: false, rej: error.message });
+    }
+
+    res.json({ ok: true });
   });
 
   // accept WebSocket channels at the root path.
