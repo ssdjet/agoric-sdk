@@ -33,8 +33,9 @@ import {
 const { details: X } = assert;
 
 /**
+ * TODO? include governance https://github.com/Agoric/agoric-sdk/issues/5268
+ *
  * @typedef {{
- * governedValues: {}, // ??? what type? ??? aren't there already subscriptions?
  * collaterals: Brand[],
  * penaltyPoolAllocation: AmountKeywordRecord,
  * rewardPoolAllocation: AmountKeywordRecord,
