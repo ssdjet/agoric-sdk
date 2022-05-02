@@ -311,6 +311,8 @@ export async function launch({
     kvStore.get(SWING_STORE_META_KEY) || '[0, 0, []]',
   );
 
+  const { validateAndInstallBundle } = controller;
+
   return {
     actionQueue,
     deliverInbound,
@@ -324,5 +326,6 @@ export async function launch({
     savedHeight,
     savedBlockTime,
     savedChainSends,
+    validateAndInstallBundle,
   };
 }
