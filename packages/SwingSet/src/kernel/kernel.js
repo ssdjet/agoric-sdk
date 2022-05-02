@@ -1078,13 +1078,13 @@ export default function buildKernel(
   }
 
   let processQueueRunning;
-  async function tryProcessMessage(processMessage, message) {
+  async function tryProcessMessage(processor, message) {
     if (processQueueRunning) {
       console.error(`We're currently already running at`, processQueueRunning);
       assert.fail(X`Kernel reentrancy is forbidden`);
     }
     processQueueRunning = Error('here');
-    return processMessage(message).finally(() => {
+    return processor(message).finally(() => {
       processQueueRunning = undefined;
     });
   }
@@ -1450,13 +1450,13 @@ export default function buildKernel(
   function getNextMessageAndProcessor() {
     let message = getNextAcceptanceMessage();
     /** @type {(message:any) => Promise<PolicyInput>} */
-    let processMessage = processAcceptanceMessage;
+    let processor = processAcceptanceMessage;
     if (!message) {
       message = getNextDeliveryMessage();
-      processMessage = processDeliveryMessage;
+      processor = processDeliveryMessage;
     }
 
-    return { message, processMessage };
+    return { message, processor };
   }
 
   async function step() {
@@ -1466,10 +1466,10 @@ export default function buildKernel(
     if (!started) {
       throw new Error('must do kernel.start() before step()');
     }
-    const { processMessage, message } = getNextMessageAndProcessor();
+    const { processor, message } = getNextMessageAndProcessor();
     // process a single message
     if (message) {
-      await tryProcessMessage(processMessage, message);
+      await tryProcessMessage(processor, message);
       if (kernelPanic) {
         throw kernelPanic;
       }
@@ -1498,14 +1498,14 @@ export default function buildKernel(
     }
     let count = 0;
     for (;;) {
-      const { processMessage, message } = getNextMessageAndProcessor();
+      const { processor, message } = getNextMessageAndProcessor();
       if (!message) {
         break;
       }
       count += 1;
       /** @type { PolicyInput } */
       // eslint-disable-next-line no-await-in-loop
-      const policyInput = await tryProcessMessage(processMessage, message);
+      const policyInput = await tryProcessMessage(processor, message);
       if (kernelPanic) {
         throw kernelPanic;
       }
