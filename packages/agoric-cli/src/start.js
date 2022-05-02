@@ -73,6 +73,7 @@ export default async function startMain(progname, rawArgs, powers, opts) {
 
   const sdkPrefixes = {};
   if (!opts.sdk) {
+    // TODO importMetaResolve should be more reliable.
     const agoricPrefix = path.resolve(`node_modules/@agoric`);
     sdkPrefixes.goPfx = agoricPrefix;
     sdkPrefixes.jsPfx = agoricPrefix;
