@@ -34,11 +34,11 @@ const trace = makeTracer('VM', true);
  *  compoundedInterest: Ratio,
  *  interestRate: Ratio,
  *  latestInterestUpdate: bigint,
+ *  liquidatorInstance?: Instance,
  * }} AssetState
  *
  * @typedef {{
  *  totalDebt: Amount<'nat'>,
- *  liquidatorInstance?: Instance,
  * }} EconState
  *
  * @typedef {{
@@ -219,12 +219,13 @@ const helperBehavior = {
       updateTime,
     );
     Object.assign(state, stateUpdates);
-    facets.helper.notify();
+    facets.helper.assetNotify();
     trace('chargeAllVaults complete');
     facets.helper.reschedulePriceCheck();
   },
 
-  notify: ({ state }) => {
+  /** @param {MethodContext} context */
+  assetNotify: ({ state }) => {
     const interestRate = state.factoryPowers
       .getGovernedParams()
       .getInterestRate();
@@ -233,10 +234,20 @@ const helperBehavior = {
       compoundedInterest: state.compoundedInterest,
       interestRate,
       latestInterestUpdate: state.latestInterestUpdate,
-      totalDebt: state.totalDebt,
+      // XXX move to EconState and type as present with null
       liquidatorInstance: state.liquidatorInstance,
     });
     state.assetUpdater.updateState(payload);
+  },
+
+  /** @param {MethodContext} context */
+  econNotify: ({ state }) => {
+    /** @type {EconState} */
+    const payload = harden({
+      numVaults: state.prioritizedVaults.getSize(),
+      totalDebt: state.totalDebt,
+    });
+    state.econUpdater.updateState(payload);
   },
 
   /**
@@ -484,7 +495,7 @@ const selfBehavior = {
    * @param {MethodContext} context
    * @param {ZCFSeat} seat
    */
-  makeVaultKit: async ({ state, facets: { manager } }, seat) => {
+  makeVaultKit: async ({ state, facets: { helper, manager } }, seat) => {
     const { prioritizedVaults, zcf } = state;
     assertProposalShape(seat, {
       give: { Collateral: null },
@@ -504,6 +515,7 @@ const selfBehavior = {
       // eslint-disable-next-line @jessie.js/no-nested-await
       const vaultKit = await vault.initVaultKit(seat);
       seat.exit();
+      helper.econNotify();
       return vaultKit;
     } catch (err) {
       // remove it from prioritizedVaults
@@ -553,7 +565,7 @@ const selfBehavior = {
     });
     state.liquidatorInstance = instance;
     state.liquidator = creatorFacet;
-    facets.helper.notify();
+    facets.helper.assetNotify();
   },
 
   /** @param {MethodContext} context */
