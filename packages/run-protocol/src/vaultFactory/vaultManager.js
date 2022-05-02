@@ -34,11 +34,13 @@ const trace = makeTracer('VM', true);
  *  compoundedInterest: Ratio,
  *  interestRate: Ratio,
  *  latestInterestUpdate: bigint,
+ * }} AssetState
+ *
+ * @typedef {{
  *  totalDebt: Amount<'nat'>,
  *  liquidatorInstance?: Instance,
- * }} AssetState */
-
-/**
+ * }} EconState
+ *
  * @typedef {{
  *  getChargingPeriod: () => bigint,
  *  getRecordingPeriod: () => bigint,
@@ -70,6 +72,8 @@ const trace = makeTracer('VM', true);
  * assetNotifier: Notifier<AssetState>,
  * assetUpdater: IterationObserver<AssetState>,
  * compoundedInterest: Ratio,
+ * econNotifier: Notifier<EconState>,
+ * econUpdater: IterationObserver<EconState>,
  * latestInterestUpdate: bigint,
  * liquidationInProgress: boolean,
  * liquidator?: Liquidator
@@ -146,8 +150,12 @@ const initState = (
       compoundedInterest,
       interestRate: fixed.factoryPowers.getGovernedParams().getInterestRate(),
       latestInterestUpdate,
+    }),
+  );
+
+  const { updater: econUpdater, notifier: econNotifier } = makeNotifierKit(
+    harden({
       totalDebt,
-      liquidationInstance: undefined,
     }),
   );
 
@@ -157,6 +165,8 @@ const initState = (
     assetNotifier,
     assetUpdater,
     debtBrand: fixed.debtBrand,
+    econNotifier,
+    econUpdater,
     vaultCounter: 0,
     liquidationInProgress: false,
     liquidator: undefined,
