@@ -6,10 +6,11 @@ import { makeRatio } from '@agoric/zoe/src/contractSupport/index.js';
 import { AmountMath, makeIssuerKit } from '@agoric/ertp';
 import { setupZCFTest } from '@agoric/zoe/test/unitTests/zcf/setupZcfTest.js';
 import { Far } from '@endo/marshal';
+import { E } from '@endo/eventual-send';
 import { makeVaultManager } from '../../src/vaultFactory/vaultManager.js';
 
 // TODO test updates
-test('notifier initial states', async t => {
+test('notifier states', async t => {
   const collatosKit = makeIssuerKit('collatos');
   const terms = harden({
     governedParams: {},
@@ -19,7 +20,10 @@ test('notifier initial states', async t => {
     Collateral: Promise.resolve(collatosKit.issuer),
   });
 
-  const { feeMintAccess, zcf } = await setupZCFTest(issuerKeywordRecord, terms);
+  const { feeMintAccess, zcf, zoe } = await setupZCFTest(
+    issuerKeywordRecord,
+    terms,
+  );
   const debtMint = await zcf.registerFeeMint('Debt', feeMintAccess);
   const debtBrand = debtMint.getIssuerRecord().brand;
 
@@ -69,4 +73,19 @@ test('notifier initial states', async t => {
     totalCollateral: AmountMath.makeEmpty(collatosKit.brand),
     totalDebt: AmountMath.makeEmpty(debtBrand),
   });
+
+  // Create a loan for 270 with 400 collateral
+  const collateralAmount = AmountMath.make(collatosKit.brand, 400n);
+  const loanAmount = AmountMath.make(debtBrand, 270n);
+  /** @type {UserSeat<VaultKit>} */
+  const vaultSeat = await E(zoe).offer(
+    await publicFacet.makeVaultInvitation(),
+    harden({
+      give: { Collateral: collateralAmount },
+      want: { RUN: loanAmount },
+    }),
+    harden({
+      Collateral: collatosKit.mint.mintPayment(collateralAmount),
+    }),
+  );
 });
