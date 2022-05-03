@@ -79,6 +79,7 @@ const trace = makeTracer('VM', true);
  * liquidator?: Liquidator
  * liquidatorInstance?: Instance
  * outstandingQuote: Promise<MutableQuote>| null,
+ * totalCollateral: Amount<'nat'>,
  * totalDebt: Amount<'nat'>,
  * vaultCounter: number,
  * }} MutableState
@@ -140,6 +141,7 @@ const initState = (
     zcf,
   };
 
+  const totalCollateral = AmountMath.makeEmpty(fixed.collateralBrand, 'nat');
   const totalDebt = AmountMath.makeEmpty(fixed.debtBrand, 'nat');
   const compoundedInterest = makeRatio(100n, fixed.debtBrand); // starts at 1.0, no interest
   // timestamp of most recent update to interest
@@ -155,6 +157,7 @@ const initState = (
 
   const { updater: econUpdater, notifier: econNotifier } = makeNotifierKit(
     harden({
+      totalCollateral,
       totalDebt,
     }),
   );
@@ -171,6 +174,7 @@ const initState = (
     liquidationInProgress: false,
     liquidator: undefined,
     liquidatorInstance: undefined,
+    totalCollateral,
     totalDebt,
     compoundedInterest,
     latestInterestUpdate,
@@ -245,6 +249,7 @@ const helperBehavior = {
     /** @type {EconState} */
     const payload = harden({
       numVaults: state.prioritizedVaults.getSize(),
+      totalCollateral: state.totalCollateral,
       totalDebt: state.totalDebt,
     });
     state.econUpdater.updateState(payload);
@@ -514,6 +519,10 @@ const selfBehavior = {
       // TODO `await` is allowed until the above ordering is fixed
       // eslint-disable-next-line @jessie.js/no-nested-await
       const vaultKit = await vault.initVaultKit(seat);
+      state.totalCollateral = AmountMath.add(
+        state.totalCollateral,
+        vaultKit.vault.getCollateralAmount(),
+      );
       seat.exit();
       helper.econNotify();
       return vaultKit;
