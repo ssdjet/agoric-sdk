@@ -43,7 +43,7 @@ const { details: X } = assert;
  *
  * @typedef {Readonly<{
  * debtMint: ZCFMint<'nat'>,
- * collateralTypes: Store<Brand,VaultManager>,
+ * collateralTypes: Store<Brand,VaultManagerObject>,
  * electionManager: Instance,
  * directorParamManager: import('@agoric/governance/src/contractGovernance/typedParamManager').TypedParamManager<{Electorate: "invitation"}>,
  * mintSeat: ZCFSeat,
@@ -120,7 +120,7 @@ const makeVaultInvitation = ({ state }) => {
       collateralTypes.has(brandIn),
       X`Not a supported collateral type ${brandIn}`,
     );
-    /** @type {VaultManager} */
+    /** @type {VaultManagerObject} */
     const mgr = collateralTypes.get(brandIn);
     return mgr.makeVaultKit(seat);
   };
@@ -166,7 +166,7 @@ const getLiquidationConfig = directorParamManager => ({
 /**
  *
  * @param {ImmutableState['directorParamManager']} govParams
- * @param {VaultManager} vaultManager
+ * @param {VaultManagerObject} vaultManager
  * @param {*} oldInstall
  * @param {*} oldTerms
  */
@@ -377,7 +377,7 @@ const publicBehavior = {
       collateralTypes.has(brandIn),
       X`Not a supported collateral type ${brandIn}`,
     );
-    /** @type {VaultManager} */
+    /** @type {VaultManagerObject} */
     return collateralTypes.get(brandIn).getPublicFacet();
   },
   /** @deprecated use getCollateralManager and then makeVaultInvitation instead */
