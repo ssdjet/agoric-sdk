@@ -38,6 +38,7 @@ const trace = makeTracer('VM', true);
  * }} AssetState
  *
  * @typedef {{
+ *  totalCollateral: Amount<'nat'>,
  *  totalDebt: Amount<'nat'>,
  * }} EconState
  *
@@ -473,7 +474,9 @@ const collateralBehavior = {
   makeVaultInvitation: ({ state: { zcf }, facets: { self } }) =>
     zcf.makeInvitation(self.makeVaultKit, 'MakeVault'),
   /** @param {MethodContext} context */
-  getNotifier: ({ state }) => state.assetNotifier,
+  getAssetNotifier: ({ state }) => state.assetNotifier,
+  /** @param {MethodContext} context */
+  getEconNotifier: ({ state }) => state.econNotifier,
   /** @param {MethodContext} context */
   getCompoundedInterest: ({ state }) => state.compoundedInterest,
 };

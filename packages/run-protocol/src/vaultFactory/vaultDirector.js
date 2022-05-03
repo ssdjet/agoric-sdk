@@ -82,7 +82,7 @@ const initState = (zcf, directorParamManager, debtMint) => {
   const vaultParamManagers = makeScalarMap('brand');
 
   // XXX need a way to register this data stream for consumption
-  const { updater: econMetrics } = makeNotifierKit();
+  const { updater: econUpdater } = makeNotifierKit();
 
   return {
     collateralTypes,
@@ -91,7 +91,7 @@ const initState = (zcf, directorParamManager, debtMint) => {
     mintSeat,
     rewardPoolSeat,
     penaltyPoolSeat,
-    econMetrics,
+    econUpdater,
     vaultParamManagers,
     zcf,
   };
