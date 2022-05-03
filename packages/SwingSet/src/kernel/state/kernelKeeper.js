@@ -237,12 +237,12 @@ export default function makeKernelKeeper(
     }
   }
 
-  function decStat(stat) {
+  function decStat(stat, delta = 1) {
     assert.typeof(kernelStats[stat], 'number');
-    kernelStats[stat] -= 1;
+    kernelStats[stat] -= delta;
     const downStat = `${stat}Down`;
     if (kernelStats[downStat] !== undefined) {
-      kernelStats[downStat] += 1;
+      kernelStats[downStat] += delta;
     }
   }
 
@@ -692,6 +692,7 @@ export default function makeKernelKeeper(
     }
     kvStore.set('acceptanceQueue', JSON.stringify(acceptanceQueue));
     incStat('acceptanceQueueLength', p.queue.length);
+    decStat('promiseQueuesLength', p.queue.length);
 
     kvStore.deletePrefixedKeys(`${kernelSlot}.queue.`);
     kvStore.set(`${kernelSlot}.queue.nextID`, `0`);
@@ -843,6 +844,7 @@ export default function makeKernelKeeper(
     kvStore.set(nkey, `${nextID + 1n}`);
     const qid = `${kernelSlot}.queue.${nextID}`;
     kvStore.set(qid, JSON.stringify(msg));
+    incStat('promiseQueuesLength');
   }
 
   function setDecider(kpid, decider) {
