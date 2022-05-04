@@ -38,6 +38,7 @@ const trace = makeTracer('VM', true);
  * }} AssetState
  *
  * @typedef {{
+ *  numVaults: number,
  *  totalCollateral: Amount<'nat'>,
  *  totalDebt: Amount<'nat'>,
  * }} EconState
@@ -158,6 +159,7 @@ const initState = (
 
   const { updater: econUpdater, notifier: econNotifier } = makeNotifierKit(
     harden({
+      numVaults: 0,
       totalCollateral,
       totalDebt,
     }),
@@ -476,7 +478,7 @@ const collateralBehavior = {
   /** @param {MethodContext} context */
   getAssetNotifier: ({ state }) => state.assetNotifier,
   /** @param {MethodContext} context */
-  getEconNotifier: ({ state }) => state.econNotifier,
+  getPublicNotifiers: ({ state }) => ({ econ: state.econNotifier }),
   /** @param {MethodContext} context */
   getCompoundedInterest: ({ state }) => state.compoundedInterest,
 };
