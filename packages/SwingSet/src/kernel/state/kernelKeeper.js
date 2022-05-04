@@ -206,6 +206,7 @@ export default function makeKernelKeeper(
   // counter named 'fooUp', the stats collection machinery will automatically
   // track the number of times 'foo' is incremented.  Similarly, 'fooDown' will
   // track the number of times 'foo' is decremented.
+  /** @type {Record<string, number>} */
   let kernelStats = {};
 
   // The SUM_METRICS just allow incrementing a single value.
