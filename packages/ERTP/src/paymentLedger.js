@@ -3,12 +3,16 @@
 import { assert, details as X } from '@agoric/assert';
 import { E } from '@endo/eventual-send';
 import { isPromise } from '@endo/promise-kit';
-import { Far, assertCopyArray } from '@endo/marshal';
-import { fit } from '@agoric/store';
-import { makeScalarBigWeakMapStore } from '@agoric/vat-data';
+import { assertCopyArray } from '@endo/marshal';
+import { fit, provide } from '@agoric/store';
+import {
+  defineDurableKindMulti,
+  makeKindHandle,
+  makeScalarBigWeakMapStore,
+} from '@agoric/vat-data';
 import { AmountMath } from './amountMath.js';
-import { definePaymentKind } from './payment.js';
-import { makePurseMaker } from './purse.js';
+import { defineDurablePaymentKind } from './payment.js';
+import { defineDurablePurse } from './purse.js';
 
 import '@agoric/store/exported.js';
 
@@ -17,6 +21,7 @@ import '@agoric/store/exported.js';
  * payments. All minting and transfer authority originates here.
  *
  * @template {AssetKind} [K=AssetKind]
+ * @param {MapStore<string,any>} issuerBaggage
  * @param {string} allegedName
  * @param {Brand} brand
  * @param {AssetKind} assetKind
@@ -24,14 +29,19 @@ import '@agoric/store/exported.js';
  * @param {ShutdownWithFailure=} optShutdownWithFailure
  * @returns {{ issuer: Issuer<K>, mint: Mint<K> }}
  */
-export const makePaymentLedger = (
+export const makeDurablePaymentLedger = (
+  issuerBaggage,
   allegedName,
   brand,
   assetKind,
   displayInfo,
   optShutdownWithFailure = undefined,
 ) => {
-  const makePayment = definePaymentKind(allegedName, brand);
+  const makePayment = defineDurablePaymentKind(
+    issuerBaggage,
+    allegedName,
+    brand,
+  );
 
   /** @type {ShutdownWithFailure} */
   const shutdownLedgerWithFailure = reason => {
@@ -49,7 +59,9 @@ export const makePaymentLedger = (
   };
 
   /** @type {WeakMapStore<Payment, Amount>} */
-  const paymentLedger = makeScalarBigWeakMapStore('payment');
+  const paymentLedger = provide(issuerBaggage, 'paymentLedger', () =>
+    makeScalarBigWeakMapStore('payment', { durable: true }),
+  );
 
   /**
    * A withdrawn live payment is associated with the recovery set of
@@ -71,7 +83,11 @@ export const makePaymentLedger = (
    *
    * @type {WeakMapStore<Payment, SetStore<Payment>>}
    */
-  const paymentRecoverySets = makeScalarBigWeakMapStore('payment-recovery');
+  const paymentRecoverySets = provide(
+    issuerBaggage,
+    'paymentRecoverySets',
+    () => makeScalarBigWeakMapStore('payment-recovery', { durable: true }),
+  );
 
   /**
    * To maintain the invariants listed in the `paymentRecoverySets` comment,
@@ -400,39 +416,44 @@ export const makePaymentLedger = (
     withdrawInternal,
   };
 
-  const makeEmptyPurse = makePurseMaker(
+  const makeEmptyPurse = defineDurablePurse(
+    issuerBaggage,
     allegedName,
     assetKind,
     brand,
     purseMethods,
   );
 
-  /** @type {Issuer<K>} */
-  const issuer = Far(`${allegedName} issuer`, {
-    isLive,
-    getAmountOf,
-    burn,
-    claim,
-    combine,
-    split,
-    splitMany,
-    getBrand: () => brand,
-    getAllegedName: () => allegedName,
-    getAssetKind: () => assetKind,
-    getDisplayInfo: () => displayInfo,
-    makeEmptyPurse,
-  });
+  const dropContext =
+    fn =>
+    (_, ...args) =>
+      fn(...args);
 
-  /** @type {Mint<K>} */
-  const mint = Far(`${allegedName} mint`, {
-    getIssuer: () => issuer,
-    mintPayment,
+  const issuerKitHandle = provide(issuerBaggage, 'issuerKitHandle', () =>
+    makeKindHandle(allegedName),
+  );
+  const makeTheKit = defineDurableKindMulti(issuerKitHandle, () => ({}), {
+    issuer: {
+      isLive: dropContext(isLive),
+      getAmountOf: dropContext(getAmountOf),
+      burn: dropContext(burn),
+      claim: dropContext(claim),
+      combine: dropContext(combine),
+      split: dropContext(split),
+      splitMany: dropContext(splitMany),
+      getBrand: () => brand,
+      getAllegedName: () => allegedName,
+      getAssetKind: () => assetKind,
+      getDisplayInfo: () => displayInfo,
+      makeEmptyPurse,
+    },
+    mint: {
+      getIssuer: ({ facets: { issuer } }) => issuer,
+      mintPayment: dropContext(mintPayment),
+    },
   });
-
-  return harden({
-    issuer,
-    mint,
-  });
+  return makeTheKit();
 };
+harden(makeDurablePaymentLedger);
 
-/** @typedef {ReturnType<makePaymentLedger>} PaymentLedger */
+/** @typedef {ReturnType<makeDurablePaymentLedger>} PaymentLedger */

@@ -1,10 +1,21 @@
 import { makeNotifierKit } from '@agoric/notifier';
-import { defineKindMulti, makeScalarBigSetStore } from '@agoric/vat-data';
+import {
+  defineDurableKindMulti,
+  makeScalarBigSetStore,
+  makeKindHandle,
+} from '@agoric/vat-data';
+import { provide } from '@agoric/store';
 import { AmountMath } from './amountMath.js';
 
 const { details: X } = assert;
 
-export const makePurseMaker = (allegedName, assetKind, brand, purseMethods) => {
+export const defineDurablePurse = (
+  issuerBaggage,
+  allegedName,
+  assetKind,
+  brand,
+  purseMethods,
+) => {
   const updatePurseBalance = (state, newPurseBalance) => {
     state.currentBalance = newPurseBalance;
     state.balanceUpdater.updateState(state.currentBalance);
@@ -17,8 +28,11 @@ export const makePurseMaker = (allegedName, assetKind, brand, purseMethods) => {
   //   that created depositFacet as needed. But this approach ensures a constant
   //   identity for the facet and exercises the multi-faceted object style.
   const { depositInternal, withdrawInternal } = purseMethods;
-  const makePurseKit = defineKindMulti(
-    allegedName,
+  const purseKitKindHandle = provide(issuerBaggage, 'purseKitKindHandle', () =>
+    makeKindHandle(allegedName),
+  );
+  const makePurseKit = defineDurableKindMulti(
+    purseKitKindHandle,
     () => {
       const currentBalance = AmountMath.makeEmpty(brand, assetKind);
 
@@ -27,7 +41,9 @@ export const makePurseMaker = (allegedName, assetKind, brand, purseMethods) => {
         makeNotifierKit(currentBalance);
 
       /** @type {SetStore<Payment>} */
-      const recoverySet = makeScalarBigSetStore('recovery set');
+      const recoverySet = makeScalarBigSetStore('recovery set', {
+        durable: true,
+      });
 
       return {
         currentBalance,
@@ -85,4 +101,4 @@ export const makePurseMaker = (allegedName, assetKind, brand, purseMethods) => {
   );
   return () => makePurseKit().purse;
 };
-harden(makePurseMaker);
+harden(defineDurablePurse);
