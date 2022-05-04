@@ -50,6 +50,7 @@ const { details: X } = assert;
  * penaltyPoolSeat: ZCFSeat,
  * rewardPoolSeat: ZCFSeat,
  * vaultParamManagers: Store<Brand, import('./params.js').VaultParamManager>,
+ * econNotifier: Notifier<EconState>
  * econUpdater: IterationObserver<EconState>
  * zcf: import('./vaultFactory.js').VaultFactoryZCF,
  * }>} ImmutableState
@@ -82,16 +83,17 @@ const initState = (zcf, directorParamManager, debtMint) => {
   const vaultParamManagers = makeScalarMap('brand');
 
   // XXX need a way to register this data stream for consumption
-  const { updater: econUpdater } = makeNotifierKit();
+  const { notifier: econNotifier, updater: econUpdater } = makeNotifierKit();
 
   return {
     collateralTypes,
     debtMint,
     directorParamManager,
-    mintSeat,
-    rewardPoolSeat,
-    penaltyPoolSeat,
+    econNotifier,
     econUpdater,
+    mintSeat,
+    penaltyPoolSeat,
+    rewardPoolSeat,
     vaultParamManagers,
     zcf,
   };
@@ -379,6 +381,13 @@ const publicBehavior = {
     );
     /** @type {VaultManagerObject} */
     return collateralTypes.get(brandIn).getPublicFacet();
+  },
+  /**
+   * @param {MethodContext} context
+   */
+  getPublicNotifiers: ({ state }) => {
+    const { econNotifier } = state;
+    return { econ: econNotifier };
   },
   /** @deprecated use getCollateralManager and then makeVaultInvitation instead */
   makeLoanInvitation: makeVaultInvitation,
