@@ -833,6 +833,23 @@ export default function makeKernelKeeper(
     insistKernelType('promise', kernelSlot);
     insistMessage(msg);
 
+    // Each message on a promise's queue maintains a refcount to the promise
+    // itself. This isn't strictly necessary (the promise will be kept alive
+    // by the deciding vat's clist, or the queued message that holds this
+    // promise as its result), but it matches our policy with run-queue
+    // messages (each holds a refcount on its target).
+    //
+    // Messages are enqueued on a promise queue in 2 cases:
+    // - A message routed from the acceptance queue
+    // - A pipelined message had a decider change while in the run-queue
+    // Messages are dequeued from a promise queue in 2 cases:
+    // - The promise is resolved
+    // - The promise's decider is changed to a pipelining vat
+    // In all cases the messages are just moved from one queue to another so
+    // the caller should not need to change the refcounts when moving messages
+    // sent to promises between queues. Only when re-targeting after resolution
+    // would the targets refcount be updated (but not the result or slots).
+
     const p = getKernelPromise(kernelSlot);
     assert(
       p.state === 'unresolved',

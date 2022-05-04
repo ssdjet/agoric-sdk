@@ -878,6 +878,9 @@ export default function buildKernel(
     let useMeter = false;
     let deliverP = null;
 
+    // The common action should be delivering events to the vat. Any references
+    // in the events should no longer be the kernel's responsibility and the
+    // refcounts should be decremented
     if (message.type === 'send') {
       useMeter = true;
       const route = routeSendEvent(message);
@@ -890,6 +893,8 @@ export default function buildKernel(
           decrementSendEventRefCount(message);
           deliverP = processSend(vatID, route.target, message.msg);
         } else {
+          // Message is requeued and stays the kernel's responsibility, do not
+          // decrement refcounts in this case
           kernelKeeper.addMessageToPromiseQueue(route.target, message.msg);
         }
       }
@@ -1096,14 +1101,17 @@ export default function buildKernel(
     /** @type { PolicyInput } */
     const policyInput = ['none'];
 
+    // By default we're moving events from one queue to another. Any references
+    // in the events remain the kernel's responsibility and the refcounts persist
     if (message.type === 'send') {
       const route = routeSendEvent(message);
       if (!route) {
-        // Message went splat
+        // Message went splat, no longer the kernel's responsibility
         decrementSendEventRefCount(message);
       } else {
         const { vatID, target } = route;
         if (target !== message.target) {
+          // Message has been re-targeted, other refcounts stay intact
           kernelKeeper.decrementRefCount(message.target, `deq|msg|t`);
           kernelKeeper.incrementRefCount(target, `enq|msg|t`);
         }
